@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>Список пользователей</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" />
+    <script src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
+    <style>
+        .act {
+            border: solid;
+        }
+        div.info p{
+            float: left;
+        }
+        div.info {
+            margin: 10px 5px;
+            padding: 5px 3px;
+        }
+        div.info button{
+            margin:0 3px;
+        }
+        div.info:nth-of-type(even) {
+            background-color: #EEEEEE;
+        }
+        div.info:nth-of-type(odd) {
+            background-color:rgb(201, 197, 197);
+        }
+    </style>
+</head>
+<body>
+    <h2>Список пользователей</h2>
+    <form name="userForm" id="Form">
+        <div class="form-group">
+            <label  for="name">Имя:</label>
+            <input type='text' autocomplete="off" class="form-control" name="name" />
+        </div>
+        <div class="form-group">
+            <label for="age">Возраст:</label>
+            <input type="number" autocomplete="off" class="form-control" name="age" />
+        </div>
+        <div class="panel-body">
+            <button  onclick="CreateUser()" type="button" class="btn btn-sm btn-primary" id='SaveButton' >Сохранить</button>
+            <button  onclick="reset()" type="button" class="btn btn-sm btn-primary">Сбросить Форму</button>
+        </div>
+    </form>
+    <div id = 'list'></div>
+    <script>
+        // Получение всех пользователей
+        (function GetUsers() {
+            let req = new XMLHttpRequest();
+            req.open('GET', '/api/users', true);
+            req.onreadystatechange = function (aEvt) {
+                if (req.readyState == 4) {
+                    if(req.status == 200){
+                        console.log(JSON.parse(req.responseText))
+                        JSON.parse(req.responseText).forEach(el => {
+                            AddText(el.name + '  ' + el.age, el._id);
+                        });
+                    }
+                    else console.log("Error loading page\n");
+                }
+            };
+            req.send(null);
+        })();
+        // Получение одного пользователя
+        function GetUser() {
+            let id = this.parentElement.id;
+            id = id.split('-')[1];
+            let req = new XMLHttpRequest();
+            req.open('GET', '/api/users/'+id, true);
+            req.onreadystatechange = function (aEvt) {
+                if (req.readyState == 4) {
+                    if(req.status == 200){
+                        console.log(JSON.parse(req.responseText))
+                        let form = document.forms["userForm"];
+                        let data = JSON.parse(req.responseText);
+                        form.elements["name"].value = data.name;
+                        form.elements["age"].value = data.age;
+                        
+                        if(!document.getElementById('DATA-'+data._id).classList.toggle('act')){
+                            reset();
+                            document.getElementById('SaveButton').onclick = CreateUser;
+                        }else {
+                            document.getElementById('SaveButton').onclick = EditUser;
+                        }
+                        
+                        let trash = document.querySelector('.act:not(#DATA-'+data._id+')');
+                        if(trash) trash.classList.remove('act');
+                    }
+                    else
+                    console.log("Error loading page\n");
+                }
+            };
+            req.send(null);
+        }
+        // Добавление пользователя
+        function CreateUser() {
+            let form = document.forms["userForm"] ;
+            let name = form.elements["name"].value ;
+            let age = form.elements["age"].value ;
+            if(name !== '' && age !== '') {
+                let xhr = new XMLHttpRequest();
+                xhr.open("POST", 'api/users', true);
+                xhr.setRequestHeader('Content-type', 'application/json');
+                xhr.send(JSON.stringify({
+                        name: name,
+                        age: age
+                }));
+                xhr.onreadystatechange = function () {
+                    if(xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200){
+                        let obj = JSON.parse(xhr.responseText);
+                        AddText(obj.name + '  ' + obj.age, obj._id);
+                        reset()
+                    }
+                }
+            }else console.log("Необходимо заполнить поля !");
+        }
+        // Изменение пользователя
+        function EditUser() {
+            let form = document.forms["userForm"] ;
+            let name = form.elements["name"].value ;
+            let age = form.elements["age"].value ;
+      
+            let id = document.querySelector('div.act').id.split('-')[1];
+            if(name!=='' && age!==''){
+                let xhr = new XMLHttpRequest();
+                xhr.open("PUT", 'api/users', true);
+                xhr.setRequestHeader('Content-type', 'application/json');
+                xhr.send(JSON.stringify({
+                        id: id,
+                        name: name,
+                        age: age
+                }));
+                xhr.onreadystatechange = function () {
+                    if(xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200){
+                        document.querySelector("div#DATA-" + id + ' p').innerHTML = name + " " + age;
+                    }
+                }
+            }else console.log("Необходимо заполнить поля !");
+        }
+        // сброс формы
+        function reset() {
+            let form = document.forms["userForm"];
+            form.reset();
+            document.getElementById('SaveButton').onclick = CreateUser;
+        }
+        // Удаление пользователя
+        function DeleteUser() {
+            let id = this.parentElement.id
+            id = id.split('-')[1];
+            let req = new XMLHttpRequest();
+            req.open('DELETE', '/api/users/'+id, true);
+            req.setRequestHeader('Content-type', 'application/json');
+            req.onreadystatechange = function () {
+                if(req.readyState === XMLHttpRequest.DONE && req.status === 200){
+                   document.getElementById("DATA-" + id).remove();
+                }
+            }
+            req.send('DELETE');
+        }
+        // отправка формы
+        function AddText(text, id){
+            let div = document.createElement('div');
+            div.id = "DATA-" + id;
+            div.classList.add('info');
+
+            let p = document.createElement('p');
+            p.innerText = text;
+            div.append(p);
+
+            let AddButton = document.createElement('button');
+            AddButton.onclick = GetUser;
+            AddButton.classList.add('btn','btn-sm', 'btn-primary');
+            AddButton.innerHTML = 'Изменить';
+            div.append(AddButton);
+
+            let DellButton = document.createElement('button');
+            DellButton.onclick = DeleteUser;
+            DellButton.classList.add('btn','btn-sm', 'btn-primary');
+            DellButton.innerHTML = 'Удалить';
+            div.append(DellButton);
+            
+            document.getElementById('list').append(div);
+        }
+       
+    </script>
+</body>
+</html>
