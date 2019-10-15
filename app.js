@@ -16,8 +16,12 @@ const userScheme = new Schema({
     },
     club: { 
         type: mongoose.Schema.Types.ObjectId, 
-        ref: 'Club'
+        ref: 'Clubs'
     },
+    titleClub: {
+        type: String,
+        //required: true
+    }
 },{versionKey: false});
 
 const clubScheme = new Schema({
@@ -25,9 +29,8 @@ const clubScheme = new Schema({
     title: String,
     numbers: [
         {   
-            serialNumber: { "type": Number, "default": 1 },
             type: mongoose.Schema.Types.ObjectId, 
-            ref: 'Member'
+            ref: 'User'
         }
     ],
 },{versionKey: false});
@@ -59,7 +62,7 @@ mongoose.connect("mongodb://localhost:27017/dogExhibitiondb", { useNewUrlParser:
             PugAbbey =  club;
         }
     });
-    Club.findOne({title : 'Corgi Abbey' }, function(err, club){
+    Club.findOne({title: 'Corgi Abbey' }, function(err, club){
         if(err) return console.log(err); 
       
         if(! club) CorgiAbbey.save();
@@ -82,11 +85,9 @@ app.get("/api/users", function(req, res){
 });
  
 app.get("/api/users/:id", function(req, res){
-         
-    const id = req.params.id;
-    User.findOne({_id: id}, function(err, user){
-          
+    User.findOne({_id: req.params.id}, function(err, user){
         if(err) return console.log(err);
+
         res.send(user);
     });
 });
@@ -94,34 +95,44 @@ app.get("/api/users/:id", function(req, res){
 app.post("/api/users", jsonParser, function(req, res) {
  
     if(!req.body) return res.sendStatus(400);
-        
-    const userName = req.body.name;
-    const userAge = req.body.age;
-    //const club = req.body.club;
-    const user = new User({name: userName, age: userAge, club: PugAbbey._id}); // club 
+  
+    const user = new User({
+        name: req.body.name,
+        age: req.body.age,
+        titleClub: req.body.club 
+    });
     
     user.save(function(err){
         if(err) return console.log(err);
+  
+        Club.findOne({ title : req.body.club }, function(err, club){
+            if(err) return console.log(err); 
 
-        Club.findOneAndUpdate(
-            { title: 'PugAbbey' }, //club
-            function(err, club) {
-                if (err) throw err;
-                club.numbers.push(use._id);
-                // club.save(done);
+            if(club){
+                club.numbers.push(user._id);
+                user.club = club._id;
+                user.save();
+                club.save();
+            }
         });
         
-
         res.send(user);
     });
 });
      
 app.delete("/api/users/:id", function(req, res){
-         
-    const id = req.params.id;
-    User.findByIdAndDelete(id, function(err, user){
-                
+    User.findByIdAndDelete(req.params.id, function(err, user){
         if(err) return console.log(err);
+     
+        Club.findById(user.club, function(err, club){ 
+            if(err) return console.log(err); 
+
+            if(club){
+                club.numbers.splice( club.numbers.indexOf(user._id ), 1 );
+                club.save()
+            }
+        });
+
         res.send(user);
     });
 });
@@ -129,12 +140,9 @@ app.delete("/api/users/:id", function(req, res){
 app.put("/api/users", jsonParser, function(req, res){
          
     if(!req.body) return res.sendStatus(400);
-    const id = req.body.id;
-    const userName = req.body.name;
-    const userAge = req.body.age;
-    const newUser = {age: userAge, name: userName};
+    const newUser = {age: req.body.age, name: req.body.name};
     
-    User.findOneAndUpdate({_id: id}, newUser, {new: true}, function(err, user){
+    User.findOneAndUpdate({_id: req.body.id}, newUser, {new: true}, function(err, user){
         if(err) return console.log(err); 
         res.send(user);
     });

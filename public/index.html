@@ -97,16 +97,19 @@
         // Добавление пользователя
         function CreateUser() {
             let form = document.forms["userForm"] ;
-            let name = form.elements["name"].value ;
-            let age = form.elements["age"].value ;
+            let name = form.elements["name"].value || 'ЗабылУказатьИмя' ;
+            let age = form.elements["age"].value || '000';
+            let club =  'Pug Abbey';//form.elements["club"].value ||
+            console.log(name,age)
             if(name !== '' && age !== '') {
-                console.log('aesrdfg')
+                
                 let xhr = new XMLHttpRequest();
                 xhr.open("POST", 'api/users', true);
                 xhr.setRequestHeader('Content-type', 'application/json');
                 xhr.send(JSON.stringify({
                         name: name,
-                        age: age
+                        age: age,
+                        club : club
                 }));
                 xhr.onreadystatechange = function () {
                     if(xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200){
