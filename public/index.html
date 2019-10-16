@@ -39,6 +39,12 @@
             <label for="age">Возраст:</label>
             <input type="number" autocomplete="off" class="form-control" name="age" />
         </div>
+        <div class="clubs">
+            <input type="radio" name="clubs" value="Pug Abbey" id='PugAbbey' checked>
+            <label >Pug Abbey</label><br>
+            <input type="radio" name="clubs" value="Corgi Abbey" id='CorgiAbbey'>
+            <label >Corgi Abbey</label><br>
+        </div>
         <div class="panel-body">
             <button  onclick="CreateUser()" type="button" class="btn btn-sm btn-primary" id='SaveButton' >Сохранить</button>
             <button  onclick="reset()" type="button" class="btn btn-sm btn-primary">Сбросить Форму</button>
@@ -47,15 +53,15 @@
     <div id = 'list'></div>
     <script>
         // Получение всех пользователей
+        
         (function GetUsers() {
             let req = new XMLHttpRequest();
             req.open('GET', '/api/users', true);
             req.onreadystatechange = function (aEvt) {
                 if (req.readyState == 4) {
                     if(req.status == 200){
-                        console.log(JSON.parse(req.responseText))
                         JSON.parse(req.responseText).forEach(el => {
-                            AddText(el.name + '  ' + el.age, el._id);
+                            AddText(el.name + '  ' + el.age + ' ' + el.titleClub, el._id);
                         });
                     }
                     else console.log("Error loading page\n");
@@ -72,12 +78,13 @@
             req.onreadystatechange = function (aEvt) {
                 if (req.readyState == 4) {
                     if(req.status == 200){
-                        console.log(JSON.parse(req.responseText))
                         let form = document.forms["userForm"];
                         let data = JSON.parse(req.responseText);
                         form.elements["name"].value = data.name;
                         form.elements["age"].value = data.age;
-                        
+
+                        document.getElementById(data.titleClub.split(' ').join('')).checked = true;
+
                         if(!document.getElementById('DATA-'+data._id).classList.toggle('act')){
                             reset();
                             document.getElementById('SaveButton').onclick = CreateUser;
@@ -99,8 +106,7 @@
             let form = document.forms["userForm"] ;
             let name = form.elements["name"].value || 'ЗабылУказатьИмя' ;
             let age = form.elements["age"].value || '000';
-            let club =  'Pug Abbey';//form.elements["club"].value ||
-            console.log(name,age)
+            let club = document.querySelector('input[name="clubs"]:checked').value;
             if(name !== '' && age !== '') {
                 
                 let xhr = new XMLHttpRequest();
@@ -122,10 +128,11 @@
         }
         // Изменение пользователя
         function EditUser() {
-            let form = document.forms["userForm"] ;
-            let name = form.elements["name"].value ;
-            let age = form.elements["age"].value ;
-      
+            let form = document.forms["userForm"];
+            let name = form.elements["name"].value;
+            let age = form.elements["age"].value;
+            let club = document.querySelector('input[name="clubs"]:checked').value;
+
             let id = document.querySelector('div.act').id.split('-')[1];
             if(name!=='' && age!==''){
                 let xhr = new XMLHttpRequest();
@@ -134,11 +141,12 @@
                 xhr.send(JSON.stringify({
                         id: id,
                         name: name,
-                        age: age
+                        age: age,
+                        club: club,
                 }));
                 xhr.onreadystatechange = function () {
                     if(xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200){
-                        document.querySelector("div#DATA-" + id + ' p').innerHTML = name + " " + age;
+                        document.querySelector("div#DATA-" + id + ' p').innerHTML = name + " " + age + " " + club;
                     }
                 }
             }else console.log("Необходимо заполнить поля !");

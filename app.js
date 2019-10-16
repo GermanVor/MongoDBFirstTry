@@ -51,7 +51,38 @@ let CorgiAbbey = new Club({
     title: 'Corgi Abbey',
     numbers: []
 });
+let DellUserFromClub = function( titleClub, user){
+    Club.findOne({ title : titleClub }, function(err, club){
+        if(err) return console.log(err); 
 
+        if(club){
+            club.numbers.splice( club.numbers.indexOf(user._id ), 1 );
+            club.save();
+            return club._id;
+        }
+    });
+}
+let AddUserToClub = function( titleClub, user ){
+    Club.findOne({ title : titleClub }, function(err, club){
+        if(err) return console.log(err); 
+
+        if(club){
+            club.numbers.push(user._id);
+            club.save();
+            return club._id;
+        }
+    });
+}
+let SendInf = function(user){
+    let a = {}
+    let obj = {...user.toObject()};
+    for(let key in obj ){
+        if(key!== 'club'){//исключаем ненужное 
+            a[key] = obj[key];
+        }
+    }
+    return a;
+}
 mongoose.connect("mongodb://localhost:27017/dogExhibitiondb", { useNewUrlParser: true }, function(err){
     if(err) return console.log(err);
 
@@ -80,14 +111,14 @@ app.get("/api/users", function(req, res){
     User.find({}, function(err, users){
  
         if(err) return console.log(err);
-        res.send(users)
+        res.send(users)//посылаю весь объект 
     });
 });
  
 app.get("/api/users/:id", function(req, res){
     User.findOne({_id: req.params.id}, function(err, user){
         if(err) return console.log(err);
-
+        
         res.send(user);
     });
 });
@@ -104,18 +135,9 @@ app.post("/api/users", jsonParser, function(req, res) {
     
     user.save(function(err){
         if(err) return console.log(err);
-  
-        Club.findOne({ title : req.body.club }, function(err, club){
-            if(err) return console.log(err); 
-
-            if(club){
-                club.numbers.push(user._id);
-                user.club = club._id;
-                user.save();
-                club.save();
-            }
-        });
         
+        AddUserToClub( req.body.club, user);
+        user.save();
         res.send(user);
     });
 });
@@ -123,16 +145,8 @@ app.post("/api/users", jsonParser, function(req, res) {
 app.delete("/api/users/:id", function(req, res){
     User.findByIdAndDelete(req.params.id, function(err, user){
         if(err) return console.log(err);
-     
-        Club.findById(user.club, function(err, club){ 
-            if(err) return console.log(err); 
-
-            if(club){
-                club.numbers.splice( club.numbers.indexOf(user._id ), 1 );
-                club.save()
-            }
-        });
-
+        
+        DellUserFromClub( user.titleClub, user );
         res.send(user);
     });
 });
@@ -140,10 +154,21 @@ app.delete("/api/users/:id", function(req, res){
 app.put("/api/users", jsonParser, function(req, res){
          
     if(!req.body) return res.sendStatus(400);
-    const newUser = {age: req.body.age, name: req.body.name};
+    
+    const newUser = {
+        age: req.body.age,
+        name: req.body.name,
+    };
     
     User.findOneAndUpdate({_id: req.body.id}, newUser, {new: true}, function(err, user){
         if(err) return console.log(err); 
+        //id user после обновления не меняется ! 
+        if( user.titleClub !== req.body.club ){
+            DellUserFromClub( user.titleClub, user );
+            AddUserToClub( req.body.club, user);
+            user.titleClub = req.body.club;
+            user.save();
+        }
         res.send(user);
     });
 });
