@@ -73,16 +73,16 @@ let AddUserToClub = function( titleClub, user ){
         }
     });
 }
-let SendInf = function(user){
-    let a = {}
-    let obj = {...user.toObject()};
-    for(let key in obj ){
-        if(key!== 'club'){//исключаем ненужное 
-            a[key] = obj[key];
-        }
-    }
-    return a;
-}
+// let SendInf = function(user){
+//     let a = {}
+//     let obj = {...user.toObject()};
+//     for(let key in obj ){
+//         if(key!== 'club'){//исключаем ненужное 
+//             a[key] = obj[key];
+//         }
+//     }
+//     return a;
+// }
 mongoose.connect("mongodb://localhost:27017/dogExhibitiondb", { useNewUrlParser: true }, function(err){
     if(err) return console.log(err);
 
@@ -122,7 +122,13 @@ app.get("/api/users/:id", function(req, res){
         res.send(user);
     });
 });
-    
+app.get("/api/clubs/:titleClub", function(req, res){
+    User.find({titleClub: req.params.titleClub}, function(err, user){
+        if(err) return console.log(err);
+        
+        res.send(user);
+    });
+});   
 app.post("/api/users", jsonParser, function(req, res) {
  
     if(!req.body) return res.sendStatus(400);

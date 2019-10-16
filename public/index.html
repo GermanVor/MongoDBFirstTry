@@ -26,32 +26,66 @@
         div.info:nth-of-type(odd) {
             background-color:rgb(201, 197, 197);
         }
+        .left{
+            float: left;
+        }
+        .right{
+            float: right;
+        }
+        .mainBloc{
+            width: 60%;
+           
+        }
+        .sideBloc{
+            width: 40%;
+            text-align: center;
+
+        }
     </style>
 </head>
 <body>
-    <h2>Список пользователей</h2>
-    <form name="userForm" id="Form">
-        <div class="form-group">
-            <label  for="name">Имя:</label>
-            <input type='text' autocomplete="off" class="form-control" name="name" />
-        </div>
-        <div class="form-group">
-            <label for="age">Возраст:</label>
-            <input type="number" autocomplete="off" class="form-control" name="age" />
-        </div>
-        <div class="clubs">
-            <input type="radio" name="clubs" value="Pug Abbey" id='PugAbbey' checked>
-            <label >Pug Abbey</label><br>
-            <input type="radio" name="clubs" value="Corgi Abbey" id='CorgiAbbey'>
+    <div class="left mainBloc" >
+        <h2>Список пользователей</h2>
+        <form name="userForm" id="Form">
+            <div class="form-group">
+                <label  for="name">Имя:</label>
+                <input type='text' autocomplete="off" class="form-control" name="name" />
+            </div>
+            <div class="form-group">
+                <label for="age">Возраст:</label>
+                <input type="number" autocomplete="off" class="form-control" name="age" />
+            </div>
+            <div class="clubs">
+                <input type="radio" name="clubs" value="Pug Abbey" id='PugAbbey' checked>
+                <label >Pug Abbey</label><br>
+                <input type="radio" name="clubs" value="Corgi Abbey" id='CorgiAbbey'>
+                <label >Corgi Abbey</label><br>
+            </div>
+            <div class="panel-body">
+                <button  onclick="CreateUser()" type="button" class="btn btn-sm btn-primary" id='SaveButton' >Сохранить</button>
+                <button  onclick="reset()" type="button" class="btn btn-sm btn-primary">Сбросить Форму</button>
+            </div>
+        </form>
+        <div class = 'list'></div>
+    </div>
+    <div class="left sideBloc" >
+        <form name="clubs" onchange='ClubsOnChange()' >
+            <input type="radio" name="ShowClubs" value="Pug Abbey" id='PugAbbey'>
+            <label >Pug Abbey</label>
+            <input type="radio" name="ShowClubs" value="Corgi Abbey" id='CorgiAbbey'>
             <label >Corgi Abbey</label><br>
-        </div>
-        <div class="panel-body">
-            <button  onclick="CreateUser()" type="button" class="btn btn-sm btn-primary" id='SaveButton' >Сохранить</button>
-            <button  onclick="reset()" type="button" class="btn btn-sm btn-primary">Сбросить Форму</button>
-        </div>
-    </form>
-    <div id = 'list'></div>
+        </form>
+        <div class="SideList"></div>
+    </div>
     <script>
+        function ClubsOnChange(){
+            document.querySelectorAll('div.SideList div').forEach( el => el.remove());
+            //заставляем каждый раз перерисовывать
+            //можно было формировать списки по ходу добавления  , а потом скрывать их
+            // или просто фильтровать один общий списко user и вешать на !==  visibility: hidden; 
+            GetClubsUsers()
+
+        }
         // Получение всех пользователей
         
         (function GetUsers() {
@@ -61,7 +95,7 @@
                 if (req.readyState == 4) {
                     if(req.status == 200){
                         JSON.parse(req.responseText).forEach(el => {
-                            AddText(el.name + '  ' + el.age + ' ' + el.titleClub, el._id);
+                            AddText(el.name + '  ' + el.age + ' ' + el.titleClub, el._id, 'list');
                         });
                     }
                     else console.log("Error loading page\n");
@@ -69,6 +103,27 @@
             };
             req.send(null);
         })();
+        // получить всех участников клуба
+        function GetClubsUsers(){
+            let club = document.querySelector('input[name="ShowClubs"]:checked');
+            if(club){
+                club.classList.add('act');
+                let req = new XMLHttpRequest();
+                req.open('GET', '/api/clubs/' + club.value, true);
+                req.onreadystatechange = function (aEvt) {
+                    if (req.readyState == 4) {
+                        if(req.status == 200){
+                            JSON.parse(req.responseText).forEach(el => {
+                            AddText(el.name + '  ' + el.age + ' ' + el.titleClub, el._id, 'SideList');
+                        });
+                        }
+                        else
+                        console.log("Error loading page\n");
+                    }
+                };
+                req.send(null);
+            } else console.log('Укажите клуб')
+        }
         // Получение одного пользователя
         function GetUser() {
             let id = this.parentElement.id;
@@ -120,8 +175,8 @@
                 xhr.onreadystatechange = function () {
                     if(xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200){
                         let obj = JSON.parse(xhr.responseText);
-                        AddText(obj.name + '  ' + obj.age, obj._id);
-                        reset()
+                        AddText(obj.name + '  ' + obj.age + ' ' + obj.titleClub, obj._id, 'list');
+                        reset();
                     }
                 }
             }else console.log("Необходимо заполнить поля !");
@@ -166,13 +221,14 @@
             req.setRequestHeader('Content-type', 'application/json');
             req.onreadystatechange = function () {
                 if(req.readyState === XMLHttpRequest.DONE && req.status === 200){
-                   document.getElementById("DATA-" + id).remove();
+                    let trash = document.querySelectorAll("#DATA-" + id)   
+                    trash.forEach( (el) => el.remove() );
                 }
             }
             req.send('DELETE');
         }
         // отправка формы
-        function AddText(text, id){
+        function AddText(text, id, position){
             let div = document.createElement('div');
             div.id = "DATA-" + id;
             div.classList.add('info');
@@ -192,8 +248,8 @@
             DellButton.classList.add('btn','btn-sm', 'btn-primary');
             DellButton.innerHTML = 'Удалить';
             div.append(DellButton);
-            
-            document.getElementById('list').append(div);
+            console.log(position)
+            document.querySelector('.' + position).append(div);
         }
        
     </script>
