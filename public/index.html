@@ -34,12 +34,18 @@
         }
         .mainBloc{
             width: 60%;
-           
+            border-right: 1px solid rgb(25, 140, 223);
+            height: 100vh;
+        }
+        .form-group{
+            width: 95%;
         }
         .sideBloc{
             width: 40%;
             text-align: center;
-
+        }
+        .hid{
+            display: none;
         }
     </style>
 </head>
@@ -70,24 +76,37 @@
     </div>
     <div class="left sideBloc" >
         <form name="clubs" onchange='ClubsOnChange()' >
-            <input type="radio" name="ShowClubs" value="Pug Abbey" id='PugAbbey'>
+            <input type="radio" name="ShowClubs" value="Pug" id='PugAbbey'>
             <label >Pug Abbey</label>
-            <input type="radio" name="ShowClubs" value="Corgi Abbey" id='CorgiAbbey'>
+            <input type="radio" name="ShowClubs" value="Corgi" id='CorgiAbbey'>
             <label >Corgi Abbey</label><br>
         </form>
-        <div class="SideList"></div>
+        <div class="SideList">
+            <div class="Pug Club hid">
+                <div class="PugClubInfo">
+                    <p>Информация клуба Мопсов</p>
+                </div>
+                <div class="PugList"></div>
+            </div>
+            <div class="Corgi Club hid">
+                <div class="CorgiClubInfo">
+                    <p>Информация клуба Корги</p>
+                </div>
+                <div class="CorgiList"></div>
+            </div>
+        </div>
     </div>
     <script>
         function ClubsOnChange(){
-            document.querySelectorAll('div.SideList div').forEach( el => el.remove());
-            //заставляем каждый раз перерисовывать
-            //можно было формировать списки по ходу добавления  , а потом скрывать их
-            // или просто фильтровать один общий списко user и вешать на !==  visibility: hidden; 
-            GetClubsUsers()
+            let club = document.querySelector('input[name="ShowClubs"]:checked');
+            let trash = document.querySelectorAll('div.Club:not(.hid)');
+            if(trash.length>0) trash.forEach( el => el.classList.add('hid') );
 
+            if(club){
+                document.querySelector('.' + club.value).classList.remove('hid');
+            }
         }
         // Получение всех пользователей
-        
         (function GetUsers() {
             let req = new XMLHttpRequest();
             req.open('GET', '/api/users', true);
@@ -96,6 +115,7 @@
                     if(req.status == 200){
                         JSON.parse(req.responseText).forEach(el => {
                             AddText(el.name + '  ' + el.age + ' ' + el.titleClub, el._id, 'list');
+                            AddText(el.name + '  ' + el.age + ' ' + el.titleClub, el._id, el.titleClub.split(' ')[0] +'List');
                         });
                     }
                     else console.log("Error loading page\n");
@@ -104,26 +124,26 @@
             req.send(null);
         })();
         // получить всех участников клуба
-        function GetClubsUsers(){
-            let club = document.querySelector('input[name="ShowClubs"]:checked');
-            if(club){
-                club.classList.add('act');
-                let req = new XMLHttpRequest();
-                req.open('GET', '/api/clubs/' + club.value, true);
-                req.onreadystatechange = function (aEvt) {
-                    if (req.readyState == 4) {
-                        if(req.status == 200){
-                            JSON.parse(req.responseText).forEach(el => {
-                            AddText(el.name + '  ' + el.age + ' ' + el.titleClub, el._id, 'SideList');
-                        });
-                        }
-                        else
-                        console.log("Error loading page\n");
-                    }
-                };
-                req.send(null);
-            } else console.log('Укажите клуб')
-        }
+        // function GetClubsUsers(){
+        //     let club = document.querySelector('input[name="ShowClubs"]:checked');
+        //     if(club){
+        //         club.classList.add('act');
+        //         let req = new XMLHttpRequest();
+        //         req.open('GET', '/api/clubs/' + club.value, true);
+        //         req.onreadystatechange = function (aEvt) {
+        //             if (req.readyState == 4) {
+        //                 if(req.status == 200){
+        //                     JSON.parse(req.responseText).forEach(el => {
+        //                     AddText(el.name + '  ' + el.age + ' ' + el.titleClub, el._id, 'SideList');
+        //                 });
+        //                 }
+        //                 else
+        //                 console.log("Error loading page\n");
+        //             }
+        //         };
+        //         req.send(null);
+        //     } else console.log('Укажите клуб')
+        // }
         // Получение одного пользователя
         function GetUser() {
             let id = this.parentElement.id;
@@ -140,15 +160,20 @@
 
                         document.getElementById(data.titleClub.split(' ').join('')).checked = true;
 
-                        if(!document.getElementById('DATA-'+data._id).classList.toggle('act')){
+                        let arr = document.querySelectorAll('#DATA-'+data._id);
+                        let flag;
+
+                        if(arr.length) arr.forEach( function(el){ flag = el.classList.toggle('act')})
+
+                        if(!flag){
                             reset();
                             document.getElementById('SaveButton').onclick = CreateUser;
                         }else {
                             document.getElementById('SaveButton').onclick = EditUser;
                         }
                         
-                        let trash = document.querySelector('.act:not(#DATA-'+data._id+')');
-                        if(trash) trash.classList.remove('act');
+                        let trash = document.querySelectorAll('.act:not(#DATA-'+data._id+')');
+                        if(trash.length) trash.forEach( el=>el.classList.remove('act'));
                     }
                     else
                     console.log("Error loading page\n");
@@ -174,8 +199,9 @@
                 }));
                 xhr.onreadystatechange = function () {
                     if(xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200){
-                        let obj = JSON.parse(xhr.responseText);
-                        AddText(obj.name + '  ' + obj.age + ' ' + obj.titleClub, obj._id, 'list');
+                        let el = JSON.parse(xhr.responseText);
+                        AddText(el.name + '  ' + el.age + ' ' + el.titleClub, el._id, 'list');
+                        AddText(el.name + '  ' + el.age + ' ' + el.titleClub, el._id, el.titleClub.split(' ')[0] +'List');
                         reset();
                     }
                 }
@@ -202,6 +228,9 @@
                 xhr.onreadystatechange = function () {
                     if(xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200){
                         document.querySelector("div#DATA-" + id + ' p').innerHTML = name + " " + age + " " + club;
+                        document.querySelector( "div.Club div#DATA-" + id ).remove();
+                        AddText(name + " " + age + " " + club, id, club.split(' ')[0] +'List');
+                        document.querySelector( "div.Club div#DATA-" + id ).classList.add('act');
                     }
                 }
             }else console.log("Необходимо заполнить поля !");
@@ -227,7 +256,6 @@
             }
             req.send('DELETE');
         }
-        // отправка формы
         function AddText(text, id, position){
             let div = document.createElement('div');
             div.id = "DATA-" + id;
@@ -248,7 +276,6 @@
             DellButton.classList.add('btn','btn-sm', 'btn-primary');
             DellButton.innerHTML = 'Удалить';
             div.append(DellButton);
-            console.log(position)
             document.querySelector('.' + position).append(div);
         }
        

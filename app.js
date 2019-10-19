@@ -1,60 +1,16 @@
 const mongoose = require("mongoose");
-
 const express = require("express");
-const Schema = mongoose.Schema;
+ 
+const User = require('./models/UserModel');
+const Club = require('./models/ClubModel')
+
 const app = express();
 const jsonParser = express.json();
- 
-const userScheme = new Schema({
-    name: {
-        type: String,
-        required: true
-    },
-    age: {
-        type: Number,
-        required: true
-    },
-    club: { 
-        type: mongoose.Schema.Types.ObjectId, 
-        ref: 'Clubs'
-    },
-    titleClub: {
-        type: String,
-        //required: true
-    }
-},{versionKey: false});
-
-const clubScheme = new Schema({
-    _id: mongoose.Schema.Types.ObjectId,
-    title: String,
-    numbers: [
-        {   
-            type: mongoose.Schema.Types.ObjectId, 
-            ref: 'User'
-        }
-    ],
-},{versionKey: false});
-
-const User = mongoose.model("User", userScheme);
-const Club = mongoose.model('Clubs', clubScheme);
-
 app.use(express.static(__dirname + "/public"));
 
-let PugAbbey = new Club({
-    _id: new mongoose.Types.ObjectId(),
-    title: 'Pug Abbey',
-    numbers: []
-});
-
-let CorgiAbbey = new Club({
-    _id: new mongoose.Types.ObjectId(),
-    title: 'Corgi Abbey',
-    numbers: []
-});
-let DellUserFromClub = function( titleClub, user){
+ function DellUserFromClub( titleClub, user){
     Club.findOne({ title : titleClub }, function(err, club){
         if(err) return console.log(err); 
-
         if(club){
             club.numbers.splice( club.numbers.indexOf(user._id ), 1 );
             club.save();
@@ -62,10 +18,10 @@ let DellUserFromClub = function( titleClub, user){
         }
     });
 }
-let AddUserToClub = function( titleClub, user ){
+
+function AddUserToClub( titleClub, user ){
     Club.findOne({ title : titleClub }, function(err, club){
         if(err) return console.log(err); 
-
         if(club){
             club.numbers.push(user._id);
             club.save();
@@ -73,31 +29,33 @@ let AddUserToClub = function( titleClub, user ){
         }
     });
 }
-// let SendInf = function(user){
-//     let a = {}
-//     let obj = {...user.toObject()};
-//     for(let key in obj ){
-//         if(key!== 'club'){//исключаем ненужное 
-//             a[key] = obj[key];
-//         }
-//     }
-//     return a;
-// }
-mongoose.connect("mongodb://localhost:27017/dogExhibitiondb", { useNewUrlParser: true }, function(err){
+
+let db = mongoose.connect("mongodb://localhost:27017/dogExhibitiondb", { useNewUrlParser: true }, function(err){
     if(err) return console.log(err);
 
     Club.findOne({title : 'Pug Abbey' }, function(err, club){
         if(err) return console.log(err); 
-        if(! club) PugAbbey.save();
-        else {
-            PugAbbey =  club;
+        if(! club) {
+            let PugAbbey = new Club({
+                _id: new mongoose.Types.ObjectId(),
+                title: 'Pug Abbey',
+                numbers: []
+            });
+            PugAbbey.save();
         }
+    
     });
     Club.findOne({title: 'Corgi Abbey' }, function(err, club){
         if(err) return console.log(err); 
       
-        if(! club) CorgiAbbey.save();
-        else CorgiAbbey =  club;
+        if(! club) {
+            let CorgiAbbey = new Club({
+                _id: new mongoose.Types.ObjectId(),
+                title: 'Corgi Abbey',
+                numbers: []
+            });
+            CorgiAbbey.save()
+        }
     });
 
     app.listen(3001, function(){
@@ -106,8 +64,9 @@ mongoose.connect("mongodb://localhost:27017/dogExhibitiondb", { useNewUrlParser:
     
 });
 
-app.get("/api/users", function(req, res){
+console.dir(db)
 
+app.get("/api/users", function(req, res){
     User.find({}, function(err, users){
  
         if(err) return console.log(err);
@@ -122,13 +81,7 @@ app.get("/api/users/:id", function(req, res){
         res.send(user);
     });
 });
-app.get("/api/clubs/:titleClub", function(req, res){
-    User.find({titleClub: req.params.titleClub}, function(err, user){
-        if(err) return console.log(err);
-        
-        res.send(user);
-    });
-});   
+
 app.post("/api/users", jsonParser, function(req, res) {
  
     if(!req.body) return res.sendStatus(400);
