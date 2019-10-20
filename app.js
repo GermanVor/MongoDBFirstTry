@@ -1,14 +1,14 @@
 const mongoose = require("mongoose");
 const express = require("express");
- 
+const passport = require('passport');
+const session = require('express-session');
+const MongoStore = require('connect-mongo')(session);
+
 const User = require('./models/UserModel');
-const Club = require('./models/ClubModel')
+const Club = require('./models/ClubModel');
+const Admin = require('./models/Admin');
 
-const app = express();
-const jsonParser = express.json();
-app.use(express.static(__dirname + "/public"));
-
- function DellUserFromClub( titleClub, user){
+function DellUserFromClub( titleClub, user){
     Club.findOne({ title : titleClub }, function(err, club){
         if(err) return console.log(err); 
         if(club){
@@ -30,9 +30,8 @@ function AddUserToClub( titleClub, user ){
     });
 }
 
-let db = mongoose.connect("mongodb://localhost:27017/dogExhibitiondb", { useNewUrlParser: true }, function(err){
+mongoose.connect("mongodb://localhost:27017/dogExhibitiondb", { useNewUrlParser: true }, function(err){
     if(err) return console.log(err);
-
     Club.findOne({title : 'Pug Abbey' }, function(err, club){
         if(err) return console.log(err); 
         if(! club) {
@@ -47,7 +46,6 @@ let db = mongoose.connect("mongodb://localhost:27017/dogExhibitiondb", { useNewU
     });
     Club.findOne({title: 'Corgi Abbey' }, function(err, club){
         if(err) return console.log(err); 
-      
         if(! club) {
             let CorgiAbbey = new Club({
                 _id: new mongoose.Types.ObjectId(),
@@ -57,14 +55,27 @@ let db = mongoose.connect("mongodb://localhost:27017/dogExhibitiondb", { useNewU
             CorgiAbbey.save()
         }
     });
-
-    app.listen(3001, function(){
-        console.log("Сервер ожидает подключения...http://localhost:3001");
+    Admin.findOne({}, function(err, admin){
+        if(err) return console.log(err);
+        if(!admin){
+            const AdminPassword = 'password';
+            const salt = bcrypt.genSaltSync(10);
+            
+            let admin = new Admin({
+                _id: new mongoose.Types.ObjectId(),
+                AdminName: 'admin',
+                Password : bcrypt.hashSync(AdminPassword, salt)
+            });
+            admin.save()
+        }
     });
     
 });
 
-console.dir(db)
+const app = express();
+const jsonParser = express.json();
+
+app.use(express.static(__dirname + "/public"));
 
 app.get("/api/users", function(req, res){
     User.find({}, function(err, users){
@@ -130,4 +141,8 @@ app.put("/api/users", jsonParser, function(req, res){
         }
         res.send(user);
     });
+});
+
+app.listen(3001, function(){
+    console.log("Сервер ожидает подключения...http://localhost:3001");
 });

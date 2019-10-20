@@ -50,6 +50,13 @@
     </style>
 </head>
 <body>
+    <div>
+        <form autocomplete="off">
+            <input name="username" id="username" type="text" placeholder="Your username" />
+            <input name="password" id="password" type="password" placeholder="Your password"/>
+            <input type="submit" />
+        </form>
+    </div>
     <div class="left mainBloc" >
         <h2>Список пользователей</h2>
         <form name="userForm" id="Form">
@@ -123,28 +130,7 @@
             };
             req.send(null);
         })();
-        // получить всех участников клуба
-        // function GetClubsUsers(){
-        //     let club = document.querySelector('input[name="ShowClubs"]:checked');
-        //     if(club){
-        //         club.classList.add('act');
-        //         let req = new XMLHttpRequest();
-        //         req.open('GET', '/api/clubs/' + club.value, true);
-        //         req.onreadystatechange = function (aEvt) {
-        //             if (req.readyState == 4) {
-        //                 if(req.status == 200){
-        //                     JSON.parse(req.responseText).forEach(el => {
-        //                     AddText(el.name + '  ' + el.age + ' ' + el.titleClub, el._id, 'SideList');
-        //                 });
-        //                 }
-        //                 else
-        //                 console.log("Error loading page\n");
-        //             }
-        //         };
-        //         req.send(null);
-        //     } else console.log('Укажите клуб')
-        // }
-        // Получение одного пользователя
+        //Получить юзера
         function GetUser() {
             let id = this.parentElement.id;
             id = id.split('-')[1];
