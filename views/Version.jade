@@ -1,0 +1,108 @@
+doctype html
+html
+  head
+    meta(charset='utf-8')
+    meta(name='viewport', content='width=device-width')
+    title Список пользователей
+    link(href='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css', rel='stylesheet')
+    script(src='https://code.jquery.com/jquery-2.2.4.min.js')
+    style.
+      body{
+        margin: 0 10px;
+      }
+      .act {
+      border: solid;
+      }
+      div.info p{
+      float: left;
+      }
+      div.info {
+      height: 35px;
+      margin: 10px 5px;
+      padding: 5px 3px;
+      }
+  
+      div.info:nth-of-type(even) {
+      background-color: #EEEEEE;
+      }
+      div.info:nth-of-type(odd) {
+      background-color:rgb(201, 197, 197);
+      }
+      .left{
+      float: left;
+      }
+      .right{
+      float: right;
+      }
+      .mainBloc{
+      width: 60%;
+      border-right: 1px solid rgb(25, 140, 223);
+      height: 100vh;
+      }
+      .form-group{
+      width: 95%;
+      }
+      .sideBloc{
+      width: 40%;
+      text-align: center;
+      }
+      .hid{
+      display: none;
+      }
+  body
+    
+    .left.mainBloc
+      a(href='/signout', class='text-center new-account') Sign Out
+      h2 Список пользователей
+      .list
+    .left.sideBloc
+      form(name='clubs', onchange='ClubsOnChange()')
+        input#PugAbbey(type='radio', name='ShowClubs', value='Pug')
+        label Pug Abbey
+        input#CorgiAbbey(type='radio', name='ShowClubs', value='Corgi')
+        label Corgi Abbey
+        br
+      .SideList
+        .Pug.Club.hid
+          .PugClubInfo
+            p Информация клуба Мопсов
+          .PugList
+        .Corgi.Club.hid
+          .CorgiClubInfo
+            p Информация клуба Корги
+          .CorgiList
+    script.
+      function ClubsOnChange(){
+      let club = document.querySelector('input[name="ShowClubs"]:checked');
+      let trash = document.querySelectorAll('div.Club:not(.hid)');
+      if(trash.length>0) trash.forEach( el => el.classList.add('hid') );
+      if(club){
+      document.querySelector('.' + club.value).classList.remove('hid');
+      }
+      }
+      // Получение всех пользователей
+      (function GetUsers() {
+      let req = new XMLHttpRequest();
+      req.open('GET', '/api/users', true);
+      req.onreadystatechange = function (aEvt) {
+      if (req.readyState == 4) {
+      if(req.status == 200){
+      JSON.parse(req.responseText).forEach(el => {
+      AddText(el.name + '  ' + el.age + ' ' + el.titleClub, el._id, 'list');
+      AddText(el.name + '  ' + el.age + ' ' + el.titleClub, el._id, el.titleClub.split(' ')[0] +'List');
+      });
+      }
+      else console.log("Error loading page\\n");
+      }
+      };
+      req.send(null);
+      })();
+      function AddText(text, id, position){
+      let div = document.createElement('div');
+      div.id = "DATA-" + id;
+      div.classList.add('info');
+      let p = document.createElement('p');
+      p.innerText = text;
+      div.append(p);
+      document.querySelector('.' + position).append(div);
+      }

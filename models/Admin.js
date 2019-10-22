@@ -1,12 +1,21 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
+const crypto = require('crypto');
 
 const AdminScheme = new Schema({
-    _id: mongoose.Schema.Types.ObjectId,
-    AdminName: String,
-    Password : String
+    salt : String,
+    name: String,
+    password : String
 },{versionKey: false});
 
-const Admin = mongoose.model('Admins', AdminScheme);
+AdminScheme.methods.setPassword = function(password) {
+    this.salt = crypto.randomBytes(16).toString('hex');
+    this.password = crypto.pbkdf2Sync(password, this.salt, 10000, 512, 'sha512').toString('hex');
+};
+  
+AdminScheme.methods.validatePassword = function(password) {
+    const hash = crypto.pbkdf2Sync(password, this.salt, 10000, 512, 'sha512').toString('hex');
+    return this.password === hash;
+};
 
-module.exports = Admin;
+module.exports = mongoose.model('Admin', AdminScheme);
