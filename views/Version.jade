@@ -23,44 +23,97 @@ html
       .SideList
         .Pug.Club.hid
           .PugClubInfo
-            p Информация клуба Мопсов
           .PugList
         .Corgi.Club.hid
           .CorgiClubInfo
-            p Информация клуба Корги
           .CorgiList
     script.
       // Получение всех пользователей
       function ClubsOnChange(){
-      let club = document.querySelector('input[name="ShowClubs"]:checked');
-      let trash = document.querySelectorAll('div.Club:not(.hid)');
-      if(trash.length>0) trash.forEach( el => el.classList.add('hid') );
-      if(club) document.querySelector('.' + club.value).classList.remove('hid');
-      }
-      (function() {
-      let req = new XMLHttpRequest();
-      req.open('GET', '/api/users', true);
-      req.onreadystatechange = function (aEvt) {
-      if (req.readyState == 4) {
-      if(req.status == 200){
-      JSON.parse(req.responseText).forEach(el => {
-      AddText(el.name + '  ' + el.age + ' ' + el.titleClub, el._id, 'list');
-      AddText(el.name + '  ' + el.age + ' ' + el.titleClub, el._id, el.titleClub.split(' ')[0] +'List');
-      });
-      ClubsOnChange();
-      }
-      else console.log("Error loading page\\n");
-      }
+        let club = document.querySelector('input[name="ShowClubs"]:checked');
+        let trash = document.querySelectorAll('div.Club:not(.hid)');
+        if(trash.length>0) trash.forEach( el => el.classList.add('hid') );
+        if(club) document.querySelector('.' + club.value).classList.remove('hid');
       };
-      req.send(null);
+      //получить всех пользователей 
+      (function() {
+        let req = new XMLHttpRequest();
+        req.open('GET', '/api/users', true);
+        req.onreadystatechange = function (aEvt) {
+          if (req.readyState == 4) {
+            if(req.status == 200){
+              JSON.parse(req.responseText).forEach(el => {
+                AddText(el.name + '  ' + el.age + ' ' + el.titleClub, el._id, 'list');
+                AddText(el.name + '  ' + el.age + ' ' + el.titleClub, el._id, el.titleClub.split(' ')[0] +'List');
+              });
+              ClubsOnChange();
+            } else console.log("Error loading page\\n");
+          }
+        };
+        req.send(null);
+      })();
+      //получить все клубы 
+      (function(){
+        let req = new XMLHttpRequest();
+        req.open('GET', '/api/clubs', true);
+        req.onreadystatechange = function (aEvt) {
+          if (req.readyState == 4) {
+            if(req.status == 200){
+              JSON.parse(req.responseText).forEach(el => {
+                console.log(el);
+                ClubInf(el)
+              });
+              ClubsOnChange();
+            } else console.log("Error loading page\\n");
+          };
+        };
+        req.send(null);
       })();
       function AddText(text, id, position){
-      let div = document.createElement('div');
-      div.id = "DATA-" + id;
-      div.classList.add('info');
-      let p = document.createElement('p');
-      p.innerText = text;
-      div.append(p);
-      document.querySelector('.' + position).append(div);
-      }
+        let div = document.createElement('div');
+        div.id = "DATA-" + id;
+        div.classList.add('info');
+
+        let p = document.createElement('p');
+        p.innerText = text;
+        div.append(p);
+        
+        document.querySelector('.' + position).append(div);
+      };
+      function ClubInf(el){
+        let div = document.createElement('div');
+        div.classList.add('ClubInfo');
+
+        let p = document.createElement('p');
+        p.innerText = el.info;
+        div.append(p);
+
+        let h3 = document.createElement('h3');
+        h3.innerText = 'Судейский состав:';
+        div.append(h3);
+
+        let ul = document.createElement('ul');
+        el.experts.forEach(function(a){
+          let li = document.createElement("li");
+          li.innerText = a;
+          ul.append(li);
+        });
+        ul.classList.add('ExpertsList');
+        div.append(ul);
+
+        h3 = document.createElement('h3');
+        h3.innerText = 'Медали клуба:';
+        div.append(h3);
+
+        ul = document.createElement('ul');
+        el.medals.forEach(function(a){
+          let li = document.createElement("li");
+          li.innerText = a;
+          ul.append(li);
+        });
+        ul.classList.add('MedalsList');
+        div.append(ul);
+      
+        document.querySelector('div.' + el.title.split(' ')[0] + 'ClubInfo').append(div);
+      };
       

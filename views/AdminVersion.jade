@@ -40,161 +40,212 @@ html
       .SideList
         .Pug.Club.hid
           .PugClubInfo
-            p Информация клуба Мопсов
           .PugList
         .Corgi.Club.hid
           .CorgiClubInfo
-            p Информация клуба Корги
           .CorgiList
     script.
       function ClubsOnChange(){
-      let club = document.querySelector('input[name="ShowClubs"]:checked');
-      let trash = document.querySelectorAll('div.Club:not(.hid)');
-      if(trash.length>0) trash.forEach( el => el.classList.add('hid') );
-      if(club) document.querySelector('.' + club.value).classList.remove('hid');
+        let club = document.querySelector('input[name="ShowClubs"]:checked');
+        let trash = document.querySelectorAll('div.Club:not(.hid)');
+        if(trash.length>0) trash.forEach( el => el.classList.add('hid') );
+        if(club) document.querySelector('.' + club.value).classList.remove('hid');
       }
       
       // Получение всех пользователей
       (function() {
-      let req = new XMLHttpRequest();
-      req.open('GET', '/api/users', true);
-      req.onreadystatechange = function (aEvt) {
-      if (req.readyState == 4) {
-      if(req.status == 200){
-      JSON.parse(req.responseText).forEach(el => {
-      AddText(el.name + '  ' + el.age + ' ' + el.titleClub, el._id, 'list');
-      AddText(el.name + '  ' + el.age + ' ' + el.titleClub, el._id, el.titleClub.split(' ')[0] +'List');
-      });
-      ClubsOnChange()
-      }
-      else console.log("Error loading page\\n");
-      }
-      };
-      req.send(null);
+        let req = new XMLHttpRequest();
+        req.open('GET', '/api/users', true);
+        req.onreadystatechange = function (aEvt) {
+          if (req.readyState == 4) {
+            if(req.status == 200){
+              JSON.parse(req.responseText).forEach(el => {
+                AddText(el.name + '  ' + el.age + ' ' + el.titleClub, el._id, 'list');
+                AddText(el.name + '  ' + el.age + ' ' + el.titleClub, el._id, el.titleClub.split(' ')[0] +'List');
+              });
+              ClubsOnChange();
+            } else console.log("Error loading page\\n");
+          };
+        };
+        req.send(null);
+      })();
+      // Получание информации о клубах
+      (function(){
+        let req = new XMLHttpRequest();
+        req.open('GET', '/api/clubs', true);
+        req.onreadystatechange = function (aEvt) {
+          if (req.readyState == 4) {
+            if(req.status == 200){
+              JSON.parse(req.responseText).forEach(el => {
+                ClubInf(el)
+              });
+              ClubsOnChange();
+            } else console.log("Error loading page\\n");
+          };
+        };
+        req.send(null);
       })();
       //Получить юзера
       function GetUser() {
-      let id = this.parentElement.id;
-      id = id.split('-')[1];
-      let req = new XMLHttpRequest();
-      req.open('GET', '/api/users/'+id, true);
-      req.onreadystatechange = function (aEvt) {
-      if (req.readyState == 4) {
-      if(req.status == 200){
-      let form = document.forms["userForm"];
-      let data = JSON.parse(req.responseText);
-      form.elements["name"].value = data.name;
-      form.elements["age"].value = data.age;
-      document.getElementById(data.titleClub.split(' ').join('')).checked = true;
-      let arr = document.querySelectorAll('#DATA-'+data._id);
-      let flag;
-      if(arr.length) arr.forEach( function(el){ flag = el.classList.toggle('act')})
-      if(!flag){
-      reset();
-      document.getElementById('SaveButton').onclick = CreateUser;
-      }else {
-      document.getElementById('SaveButton').onclick = EditUser;
-      }
-      let trash = document.querySelectorAll('.act:not(#DATA-'+data._id+')');
-      if(trash.length) trash.forEach( el=>el.classList.remove('act'));
-      }
-      else
-      console.log("Error loading page\\n");
-      }
+        let id = this.parentElement.id;
+        id = id.split('-')[1];
+        let req = new XMLHttpRequest();
+        req.open('GET', '/api/users/'+id, true);
+        req.onreadystatechange = function (aEvt) {
+          if (req.readyState == 4) {
+            if(req.status == 200) {
+              let form = document.forms["userForm"];
+              let data = JSON.parse(req.responseText);
+              form.elements["name"].value = data.name;
+              form.elements["age"].value = data.age;
+              document.getElementById(data.titleClub.split(' ').join('')).checked = true;
+              let arr = document.querySelectorAll('#DATA-'+data._id);
+              let flag;
+              if(arr.length) arr.forEach( function(el){ flag = el.classList.toggle('act')})
+              if(!flag) {
+                reset();
+                document.getElementById('SaveButton').onclick = CreateUser;
+              } else document.getElementById('SaveButton').onclick = EditUser;
+              
+              let trash = document.querySelectorAll('.act:not(#DATA-'+data._id+')');
+              if(trash.length) trash.forEach( el=>el.classList.remove('act'));
+            } else console.log("Error loading page\\n");
+          }
+        };
+        req.send(null);
       };
-      req.send(null);
-      }
       // Добавление пользователя
       function CreateUser() {
-      let form = document.forms["userForm"] ;
-      let name = form.elements["name"].value || 'ЗабылУказатьИмя' ;
-      let age = form.elements["age"].value || '000';
-      let club = document.querySelector('input[name="clubs"]:checked').value;
-      if(name !== '' && age !== '') {
-      let xhr = new XMLHttpRequest();
-      xhr.open("POST", 'api/users', true);
-      xhr.setRequestHeader('Content-type', 'application/json');
-      xhr.send(JSON.stringify({
-      name: name,
-      age: age,
-      club : club
-      }));
-      xhr.onreadystatechange = function () {
-      if(xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200){
-      let el = JSON.parse(xhr.responseText);
-      AddText(el.name + '  ' + el.age + ' ' + el.titleClub, el._id, 'list');
-      AddText(el.name + '  ' + el.age + ' ' + el.titleClub, el._id, el.titleClub.split(' ')[0] +'List');
-      }
-      }
-      }else console.log("Необходимо заполнить поля !");
-      }
+        let form = document.forms["userForm"] ;
+        let name = form.elements["name"].value || 'ЗабылУказатьИмя' ;
+        let age = form.elements["age"].value || '000';
+        let club = document.querySelector('input[name="clubs"]:checked').value;
+        if(name !== '' && age !== '') {
+          let xhr = new XMLHttpRequest();
+          xhr.open("POST", 'api/users', true);
+          xhr.setRequestHeader('Content-type', 'application/json');
+          xhr.send(JSON.stringify({
+            name: name,
+            age: age,
+            club : club
+          }));
+          xhr.onreadystatechange = function () {
+            if(xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200){
+              let el = JSON.parse(xhr.responseText);
+              AddText(el.name + '  ' + el.age + ' ' + el.titleClub, el._id, 'list');
+              AddText(el.name + '  ' + el.age + ' ' + el.titleClub, el._id, el.titleClub.split(' ')[0] +'List');
+            };
+          };
+        } else console.log("Необходимо заполнить поля !");
+      };
       // Изменение пользователя
       function EditUser() {
-      let form = document.forms["userForm"];
-      let name = form.elements["name"].value;
-      let age = form.elements["age"].value;
-      let club = document.querySelector('input[name="clubs"]:checked').value;
-      let id = document.querySelector('div.act').id.split('-')[1];
-      if(name!=='' && age!==''){
-      let xhr = new XMLHttpRequest();
-      xhr.open("PUT", 'api/users', true);
-      xhr.setRequestHeader('Content-type', 'application/json');
-      xhr.send(JSON.stringify({
-      id: id,
-      name: name,
-      age: age,
-      club: club,
-      }));
-      xhr.onreadystatechange = function () {
-      if(xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200){
-      document.querySelector("div#DATA-" + id + ' p').innerHTML = name + " " + age + " " + club;
-      document.querySelector( "div.Club div#DATA-" + id ).remove();
-      AddText(name + " " + age + " " + club, id, club.split(' ')[0] +'List');
-      document.querySelector( "div.Club div#DATA-" + id ).classList.add('act');
-      }
-      }
-      }else console.log("Необходимо заполнить поля !");
-      }
+        let form = document.forms["userForm"];
+        let name = form.elements["name"].value;
+        let age = form.elements["age"].value;
+        let club = document.querySelector('input[name="clubs"]:checked').value;
+        let id = document.querySelector('div.act').id.split('-')[1];
+        if(name!=='' && age!==''){
+          let xhr = new XMLHttpRequest();
+          xhr.open("PUT", 'api/users', true);
+          xhr.setRequestHeader('Content-type', 'application/json');
+          xhr.send(JSON.stringify({
+            id: id,
+            name: name,
+            age: age,
+            club: club,
+          }));
+          xhr.onreadystatechange = function() {
+            if(xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
+              document.querySelector("div#DATA-" + id + ' p').innerHTML = name + " " + age + " " + club;
+              document.querySelector( "div.Club div#DATA-" + id ).remove();
+              AddText(name + " " + age + " " + club, id, club.split(' ')[0] +'List');
+              document.querySelector( "div.Club div#DATA-" + id ).classList.add('act');
+            };
+          };
+        } else console.log("Необходимо заполнить поля !");
+      };
       // сброс формы
       function reset() {
-      let form = document.forms["userForm"];
-      form.reset();
-      document.getElementById('SaveButton').onclick = CreateUser;
+        let form = document.forms["userForm"];
+        form.reset();
+        document.getElementById('SaveButton').onclick = CreateUser;
       }
       // Удаление пользователя
       function DeleteUser() {
-      let id = this.parentElement.id
-      id = id.split('-')[1];
-      let req = new XMLHttpRequest();
-      req.open('DELETE', '/api/users/'+id, true);
-      req.setRequestHeader('Content-type', 'application/json');
-      req.onreadystatechange = function () {
-      if(req.readyState === XMLHttpRequest.DONE && req.status === 200){
-      let trash = document.querySelectorAll("#DATA-" + id)
-      if(trash[0].classList.contains('act')){
-      document.getElementById('SaveButton').onclick = CreateUser;
-      }
-      trash.forEach( (el) => el.remove() );
-      }
-      }
-      req.send(null);
-      }
+        let id = this.parentElement.id
+        id = id.split('-')[1];
+        let req = new XMLHttpRequest();
+        req.open('DELETE', '/api/users/'+id, true);
+        req.setRequestHeader('Content-type', 'application/json');
+        req.onreadystatechange = function () {
+          if(req.readyState === XMLHttpRequest.DONE && req.status === 200){
+            let trash = document.querySelectorAll("#DATA-" + id)
+            if(trash[0].classList.contains('act')){
+              document.getElementById('SaveButton').onclick = CreateUser;
+              reset();
+            }
+            trash.forEach( (el) => el.remove() );
+          };
+        };
+        req.send(null);
+      };
       function AddText(text, id, position){
-      let div = document.createElement('div');
-      div.id = "DATA-" + id;
-      div.classList.add('info');
-      let p = document.createElement('p');
-      p.innerText = text;
-      div.append(p);
-      let AddButton = document.createElement('button');
-      AddButton.onclick = GetUser;
-      AddButton.classList.add('btn','btn-sm', 'btn-primary');
-      AddButton.innerHTML = 'Изменить';
-      div.append(AddButton);
-      let DellButton = document.createElement('button');
-      DellButton.onclick = DeleteUser;
-      DellButton.classList.add('btn','btn-sm', 'btn-primary');
-      DellButton.innerHTML = 'Удалить';
-      div.append(DellButton);
-      document.querySelector('.' + position).append(div);
+        let div = document.createElement('div');
+        div.id = "DATA-" + id;
+        div.classList.add('info');
+
+        let p = document.createElement('p');
+        p.innerText = text;
+        div.append(p);
+
+        let AddButton = document.createElement('button');
+        AddButton.onclick = GetUser;
+        AddButton.classList.add('btn','btn-sm', 'btn-primary');
+        AddButton.innerHTML = 'Изменить';
+        div.append(AddButton);
+
+        let DellButton = document.createElement('button');
+        DellButton.onclick = DeleteUser;
+        DellButton.classList.add('btn','btn-sm', 'btn-primary');
+        DellButton.innerHTML = 'Удалить';
+        div.append(DellButton);
+
+        document.querySelector('.' + position).append(div);
       }
+      function ClubInf(el){
+        let div = document.createElement('div');
+        div.classList.add('ClubInfo');
+
+        let p = document.createElement('p');
+        p.innerText = el.info;
+        div.append(p);
+
+        let h3 = document.createElement('h3');
+        h3.innerText = 'Судейский состав:';
+        div.append(h3);
+
+        let ul = document.createElement('ul');
+        el.experts.forEach(function(a){
+          let li = document.createElement("li");
+          li.innerText = a;
+          ul.append(li);
+        });
+        ul.classList.add('ExpertsList');
+        div.append(ul);
+
+        h3 = document.createElement('h3');
+        h3.innerText = 'Медали клуба:';
+        div.append(h3);
+
+        ul = document.createElement('ul');
+        el.medals.forEach(function(a){
+          let li = document.createElement("li");
+          li.innerText = a;
+          ul.append(li);
+        });
+        ul.classList.add('MedalsList');
+        div.append(ul);
+      
+        document.querySelector('div.' + el.title.split(' ')[0] + 'ClubInfo').append(div);
+      };

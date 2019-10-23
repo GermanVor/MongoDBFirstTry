@@ -4,15 +4,31 @@ const cookieParser = require('cookie-parser');
 const Club = require('./models/ClubModel');
 const Admin = require('./models/Admin');
 
+function AddUserToClub( titleClub, user ){
+    Club.findOne({ title : titleClub }, function(err, club){
+        if(err) return console.log(err); 
+        if(club){
+            club.numbers.push(user._id);
+            club.save();
+            return club._id;
+        }
+    });
+}
+
 mongoose.connect("mongodb://localhost:27017/dogExhibitiondb", { useNewUrlParser: true }, function(err){
     if(err) return console.log(err);
     Club.findOne({title : 'Pug Abbey' }, function(err, club){
         if(err) return console.log(err); 
         if(! club) {
             let PugAbbey = new Club({
-                //_id: new mongoose.Types.ObjectId(),
                 title: 'Pug Abbey',
-                numbers: []
+                info: 'Информация клуба Мопсов',
+                numbers: [],
+                medals: ['За первое место где то там'],
+                experts: ['БАУЖЕС Б.В', 'БЕЛКИН К.Ц', 'БОТНИНА Л.А']
+            });
+            require('./models/UserModel').find({ titleClub: 'Pug Abbey' } ,function(err, arr){
+                arr.forEach( (el) => AddUserToClub( 'Pug Abbey', el) )
             });
             PugAbbey.save();
         }
@@ -22,9 +38,14 @@ mongoose.connect("mongodb://localhost:27017/dogExhibitiondb", { useNewUrlParser:
         if(err) return console.log(err); 
         if(! club) {
             let CorgiAbbey = new Club({
-                //_id: new mongoose.Types.ObjectId(),
                 title: 'Corgi Abbey',
-                numbers: []
+                info: 'Информация клуба Корги',
+                numbers: [],
+                medals: ['За второе место гду то там', 'За первое место в другом месте'],
+                experts: ['ГУРЫКИН В.Ф', 'ГАЛИАСКАРОВА Л.г', 'ГРИГОРЕНКО З.Р']
+            });
+            require('./models/UserModel').find({ titleClub: 'Corgi Abbey' } ,function(err, arr){
+                arr.forEach( (el) => AddUserToClub( 'Corgi Abbey', el) )
             });
             CorgiAbbey.save()
         }

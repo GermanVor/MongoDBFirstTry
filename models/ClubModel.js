@@ -2,8 +2,16 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
 const clubScheme = new Schema({
-   // _id: mongoose.Schema.Types.ObjectId,
     title: String,
+    info: String,
+    medals: [
+        {
+            type: String
+        }
+    ],
+    experts: [
+        { type: String}
+    ],
     numbers: [
         {   
             type: mongoose.Schema.Types.ObjectId, 

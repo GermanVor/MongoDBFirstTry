@@ -51,11 +51,18 @@ module.exports = function(passport){
 		res.render('AdminVersion');
 	});
 	//получить весь список пользователей 
-    router.get( '/api/users', function(req, res){
+  router.get( '/api/users', function(req, res){
         User.find({}, function(err, users){
             if(err) return console.log(err);
             res.send(users)//посылаю весь объект 
         });
+	});
+	// получить все клубы 
+	router.get( '/api/clubs', function(req, res){
+		Club.find({}, function(err, users){
+				if(err) return console.log(err);
+				res.send(users)//посылаю весь объект 
+		});
 	});
 	//добавить пользователя
 	router.post('/api/users', isAuthenticated, jsonParser, function(req, res) {
