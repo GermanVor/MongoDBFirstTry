@@ -1,0 +1,38 @@
+body{
+  margin: 0 10px;
+}
+label {
+  margin: 0 5px;
+}
+div.info p{
+  float: left;
+}
+div.info {
+  height: 35px;
+  margin: 10px 5px;
+  padding: 5px 3px;
+}
+div.info:nth-of-type(even) {
+  background-color: #EEEEEE;
+}
+div.info:nth-of-type(odd) {
+  background-color:rgb(201, 197, 197);
+}
+.left{
+  float: left;
+}
+.right{
+  float: right;
+}
+.mainBloc{
+  width: 60%;
+  border-right: 1px solid rgb(25, 140, 223);
+  height: 100vh;
+}
+.sideBloc{
+  width: 40%;
+  text-align: center;
+}
+.hid{
+  display: none;
+}

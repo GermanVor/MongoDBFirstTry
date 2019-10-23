@@ -5,51 +5,9 @@ html
     meta(name='viewport', content='width=device-width')
     title Список пользователей
     link(href='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css', rel='stylesheet')
+    link(rel='stylesheet', href='/stylesheets/Version.css')
+    link(rel='stylesheet', href='/stylesheets/Admin.css')
     script(src='https://code.jquery.com/jquery-2.2.4.min.js')
-    style.
-      body{
-        margin: 0 10px;
-      }
-      .act {
-      border: solid;
-      }
-      div.info p{
-      float: left;
-      }
-      div.info {
-      margin: 10px 5px;
-      padding: 5px 3px;
-      }
-      div.info button{
-      margin:0 3px;
-      }
-      div.info:nth-of-type(even) {
-      background-color: #EEEEEE;
-      }
-      div.info:nth-of-type(odd) {
-      background-color:rgb(201, 197, 197);
-      }
-      .left{
-      float: left;
-      }
-      .right{
-      float: right;
-      }
-      .mainBloc{
-      width: 60%;
-      border-right: 1px solid rgb(25, 140, 223);
-      height: 100vh;
-      }
-      .form-group{
-      width: 95%;
-      }
-      .sideBloc{
-      width: 40%;
-      text-align: center;
-      }
-      .hid{
-      display: none;
-      }
   body
     .left.mainBloc
       a(href='/signout', class='text-center new-account') Sign Out
@@ -62,7 +20,7 @@ html
           label(for='age') Возраст:
           input.form-control(type='number', autocomplete='off', name='age')
         .clubs
-          input#PugAbbey(type='radio', name='clubs', value='Pug Abbey', checked='')
+          input#PugAbbey(type='radio', name='clubs', value='Pug Abbey')
           label Pug Abbey
           br
           input#CorgiAbbey(type='radio', name='clubs', value='Corgi Abbey')
@@ -74,7 +32,7 @@ html
       .list
     .left.sideBloc
       form(name='clubs', onchange='ClubsOnChange()')
-        input#PugAbbey(type='radio', name='ShowClubs', value='Pug')
+        input#PugAbbey(type='radio', name='ShowClubs', value='Pug', checked)
         label Pug Abbey
         input#CorgiAbbey(type='radio', name='ShowClubs', value='Corgi')
         label Corgi Abbey
@@ -93,12 +51,11 @@ html
       let club = document.querySelector('input[name="ShowClubs"]:checked');
       let trash = document.querySelectorAll('div.Club:not(.hid)');
       if(trash.length>0) trash.forEach( el => el.classList.add('hid') );
-      if(club){
-      document.querySelector('.' + club.value).classList.remove('hid');
+      if(club) document.querySelector('.' + club.value).classList.remove('hid');
       }
-      }
+      
       // Получение всех пользователей
-      (function GetUsers() {
+      (function() {
       let req = new XMLHttpRequest();
       req.open('GET', '/api/users', true);
       req.onreadystatechange = function (aEvt) {
@@ -108,6 +65,7 @@ html
       AddText(el.name + '  ' + el.age + ' ' + el.titleClub, el._id, 'list');
       AddText(el.name + '  ' + el.age + ' ' + el.titleClub, el._id, el.titleClub.split(' ')[0] +'List');
       });
+      ClubsOnChange()
       }
       else console.log("Error loading page\\n");
       }
@@ -166,7 +124,6 @@ html
       let el = JSON.parse(xhr.responseText);
       AddText(el.name + '  ' + el.age + ' ' + el.titleClub, el._id, 'list');
       AddText(el.name + '  ' + el.age + ' ' + el.titleClub, el._id, el.titleClub.split(' ')[0] +'List');
-      reset();
       }
       }
       }else console.log("Необходимо заполнить поля !");

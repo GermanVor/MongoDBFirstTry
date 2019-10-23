@@ -20,7 +20,7 @@ function DellUserFromClub( titleClub, user){
         }
     });
 }
-
+ 
 function AddUserToClub( titleClub, user ){
     Club.findOne({ title : titleClub }, function(err, club){
         if(err) return console.log(err); 
@@ -72,6 +72,7 @@ module.exports = function(passport){
 			res.send(user);
 		});
 	})
+	
 	//изменить пользователя 
 	router.put( '/api/users', isAuthenticated, jsonParser, function(req, res){
 		if(!req.body) return res.sendStatus(400);
