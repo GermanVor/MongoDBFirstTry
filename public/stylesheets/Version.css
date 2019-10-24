@@ -20,9 +20,11 @@ div.info:nth-of-type(odd) {
 }
 .left{
   float: left;
+  width: 50%;
 }
 .right{
   float: right;
+  width: 50%;
 }
 .mainBloc{
   width: 60%;

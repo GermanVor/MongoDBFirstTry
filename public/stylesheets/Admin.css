@@ -1,6 +1,5 @@
-
 .act {
-border: solid;
+  border: solid;
 }
 div.info {
   height: auto;
@@ -15,4 +14,14 @@ div.panel-body button{
 }
 .form-group{
   width: 95%;
+}
+.ClubInfo .form-control {
+  width: auto; 
+  display: inline;
+}
+.ClubInfo input.form-control {
+  margin: 5px 10px;
+}
+.ClubInfo input.hid {
+  display: none;
 }
