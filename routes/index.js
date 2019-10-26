@@ -68,9 +68,9 @@ module.exports = function(passport){
 	router.post('/api/users', isAuthenticated, jsonParser, function(req, res) {
         if(!req.body) return res.sendStatus(400);
         const user = new User({
-            name: req.body.name,
-            age: req.body.age,
-            titleClub: req.body.club 
+            name: req.body.name.filter( a => a!==''),
+            age: req.body.age.filter( a => a!==''),
+            titleClub: req.body.club.filter( a => a!=='') 
 		});
 		user.save(function(err){
 			if(err) return console.log(err);
@@ -84,8 +84,8 @@ module.exports = function(passport){
 	router.put( '/api/users', isAuthenticated, jsonParser, function(req, res){
 		if(!req.body) return res.sendStatus(400);
 		const newUser = {
-			age: req.body.age,
-			name: req.body.name,
+			age: req.body.age.filter( a => a!==''),
+			name: req.body.name.filter( a => a!==''),
 		};
 		User.findOneAndUpdate({_id: req.body.id}, newUser, {new: true}, function(err, user){
 			if(err) return console.log(err); 
@@ -113,7 +113,19 @@ module.exports = function(passport){
             res.send(user);
         });
 	});
-	//раздогиниться 
+	//изменить клуб
+	router.put( '/api/clubs/:id', isAuthenticated, jsonParser, function(req, res) {
+			if(!req.body) return res.sendStatus(400);
+			let Info = {
+				experts: req.body.experts.filter( a => a!==''),
+				medals: req.body.medals.filter( a => a!=='')
+			};
+			
+			Club.findOneAndUpdate({_id: req.params.id}, Info, {new: true}, function(err, user) {
+				if(err) return console.log(err);
+			});
+	});
+	//разлогиниться 
 	router.get('/signout', function(req, res) {
 		req.logout();
 		res.redirect('/');

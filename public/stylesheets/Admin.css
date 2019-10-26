@@ -15,13 +15,13 @@ div.panel-body button{
 .form-group{
   width: 95%;
 }
-.ClubInfo .form-control {
+.Club .form-control {
   width: auto; 
   display: inline;
 }
-.ClubInfo input.form-control {
+.Club input.form-control {
   margin: 5px 10px;
 }
-.ClubInfo input.hid {
+.Club input.hid {
   display: none;
 }

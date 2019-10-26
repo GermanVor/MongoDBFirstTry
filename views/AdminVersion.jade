@@ -67,7 +67,7 @@ html
                 AddText(el.name + '  ' + el.age + ' ' + el.titleClub, el._id, 'list');
                 AddText(el.name + '  ' + el.age + ' ' + el.titleClub, el._id, el.titleClub.split(' ')[0] +'List');
               });
-              ClubsOnChange();
+              //- ClubsOnChange();
             } else console.log("Error loading page\\n");
           };
         };
@@ -84,8 +84,10 @@ html
                 ClubInf(el)
               });
               ClubsOnChange();
+              //можно запросто убрать привязку к заготовленному шаблону html но придется разбираться , с div ами и классами - потом все сделаю 
               document.querySelector('button.PugAbbeyButt').onclick = ChangeClub;
               document.querySelector('button.CorgiAbbeyButt').onclick = ChangeClub;
+
             } else console.log("Error loading page\\n");
           };
         };
@@ -171,29 +173,51 @@ html
           };
         } else console.log("Необходимо заполнить поля !");
       };
-      //изменить клуб
-      function ChangeClub(){
+      // открыть меню клуба
+      function ChangeClub() {
         let input = this.parentElement.querySelector('input');
+
         if(input && !input.checked) {
           input.checked = true;
           ClubsOnChange();
         }
+        
+        let butt = document.querySelector('div.Club:not(.hid) button');
+        butt.classList.toggle('hid');
+
         let UlArr = document.querySelectorAll('div.Club:not(.hid) li');
         if(UlArr) {
-          UlArr.forEach(function(a){
+          UlArr.forEach(function(a) {
             let input = a.querySelector('input');
             input.classList.toggle('hid');
-            
           });
         };
       };
-      
+      //сохранить изменения клуба 
+      function SaveClub() {
+        let inpArr = [ ...document.querySelectorAll('div.Club:not(.hid) input')];
+        
+        let req = new XMLHttpRequest();
+        req.open('PUT', '/api/clubs/' + this.parentElement.id, true);
+        req.setRequestHeader('Content-type', 'application/json');
+        
+        let obj = {
+          experts: inpArr.filter( (a) => a.hasAttribute('experts') ).map( a => a.value),
+          medals: inpArr.filter( (a) => a.hasAttribute('medals') ).map( a => a.value)
+        };
+        req.send(JSON.stringify( obj ));
+        
+        inpArr.forEach(function(a){
+          if( a.parentElement.localName === 'li' )
+            a.parentElement.firstChild.textContent = a.value;
+        });
+      };
       // сброс формы
       function reset() {
         let form = document.forms["userForm"];
         form.reset();
         document.getElementById('SaveButton').onclick = CreateUser;
-      }
+      };
       // Удаление пользователя
       function DeleteUser() {
         let id = this.parentElement.id
@@ -213,7 +237,8 @@ html
         };
         req.send(null);
       };
-      function AddText(text, id, position){
+
+      function AddText(text, id, position) {
         let div = document.createElement('div');
         div.id = "DATA-" + id;
         div.classList.add('info');
@@ -235,45 +260,55 @@ html
         div.append(DellButton);
 
         document.querySelector('.' + position).append(div);
-      }
-      function ClubInf(el){
-        let div = document.createElement('div');
-        div.classList.add('ClubInfo');
+      };
+
+      function ClubInf( el ){
+        console.log(el)
+
+        let div = document.querySelector('div.' + el.title.split(' ')[0] + 'ClubInfo')
 
         let p = document.createElement('p');
         p.innerText = el.info;
+        p.classList.add('info')
         div.append(p);
 
-        let inp = function( root ){
+        let inp = function( root, value, ulClass, ind ) {
           let input = document.createElement('input');
           input.type = 'text';
-          input.classList.add('form-control', 'hid') //
-
+          input.classList.add('form-control', 'hid');
+          if( ind || ind === 0) input.setAttribute( ulClass, ind );
+          input.value = value;
           root.append(input);
-        }
+        };
 
-        let list = function( el, root, ulClass){
+        let list = function( el, root, ulClass) {
           let ul = document.createElement('ul');
-          el.forEach(function(a){
+          el.forEach( function( a, ind ){
             let li = document.createElement("li");
             li.innerText = a;
-            inp(li);
+            inp( li, a, ulClass, ind );
             ul.append(li);
           });
           if(ulClass) ul.classList.add(ulClass);
           root.append(ul);
-        }
+        };
 
         let h3 = document.createElement('h3');
         h3.innerText = 'Судейский состав:';
         div.append(h3);
-        list( el.experts, div, 'ExpertsList');
+        list( el.experts, div, 'experts');
 
         h3 = document.createElement('h3');
         h3.innerText = 'Медали клуба:';
         div.append(h3);
-        list( el.medals, div, 'MedalsList');
+        list( el.medals, div, 'medals');
 
-        document.querySelector('div.' + el.title.split(' ')[0] + 'ClubInfo').append(div);
+        let button = document.createElement('button');
+        button.innerText = 'Сохранить';
+        button.classList.add('hid', 'btn', 'btn-sm', 'btn-primary', el.title.split(' ')[0] );
+        button.onclick = SaveClub;
+        div.append(button)
+
+        document.querySelector('div.' + el.title.split(' ')[0] + 'ClubInfo').id = el._id;
       };
       
