@@ -44,18 +44,18 @@ html
             button.btn.btn-sm.btn-primary.CorgiAbbeyButt( type='button' ) Изменить
       .SideList
         .Pug.Club.hid
-          .PugClubInfo
-          .PugList
+          .PugClubInfo.ClubInfo
+          .PugList.List
         .Corgi.Club.hid
-          .CorgiClubInfo
-          .CorgiList
+          .CorgiClubInfo.ClubInfo
+          .CorgiList.List
     script.
       function ClubsOnChange(){
         let club = document.querySelector('input[name="ShowClubs"]:checked');
-        let trash = document.querySelectorAll('div.Club:not(.hid)');
+        let trash = document.querySelectorAll('div.Club:not(.hid)');//.Club
         if(trash.length>0) trash.forEach( el => el.classList.add('hid') );
         if(club) document.querySelector('.' + club.value).classList.remove('hid');
-      }
+      };
       // Получение всех пользователей
       (function(){
         let req = new XMLHttpRequest();
@@ -182,34 +182,40 @@ html
           ClubsOnChange();
         }
         
-        let butt = document.querySelector('div.Club:not(.hid) button');
-        butt.classList.toggle('hid');
+        let butt = document.querySelectorAll('div.Club:not(.hid) div.ClubInfo button');
+      
+        if(butt) butt.forEach( a => a.classList.toggle('hid') );
 
-        let UlArr = document.querySelectorAll('div.Club:not(.hid) li');
+        let UlArr = document.querySelectorAll('div.Club:not(.hid) div.ClubInfo input');
         if(UlArr) {
           UlArr.forEach(function(a) {
-            let input = a.querySelector('input');
-            input.classList.toggle('hid');
+            a.classList.toggle('hid');
           });
         };
+
       };
       //сохранить изменения клуба 
       function SaveClub() {
-        let inpArr = [ ...document.querySelectorAll('div.Club:not(.hid) input')];
+        let inpArr = [ ...document.querySelectorAll('div.Club:not(.hid) div.ClubInfo input')];
         
         let req = new XMLHttpRequest();
-        req.open('PUT', '/api/clubs/' + this.parentElement.id, true);
+        let id = document.querySelector('div.Club:not(.hid) div.ClubInfo').id;
+        req.open('PUT', '/api/clubs/' + id, true);
         req.setRequestHeader('Content-type', 'application/json');
         
         let obj = {
           experts: inpArr.filter( (a) => a.hasAttribute('experts') ).map( a => a.value),
           medals: inpArr.filter( (a) => a.hasAttribute('medals') ).map( a => a.value)
         };
+        
         req.send(JSON.stringify( obj ));
         
         inpArr.forEach(function(a){
           if( a.parentElement.localName === 'li' )
             a.parentElement.firstChild.textContent = a.value;
+
+          if( a.getAttribute('experts') === 'new' )
+            console.log(a)
         });
       };
       // сброс формы
@@ -263,7 +269,6 @@ html
       };
 
       function ClubInf( el ){
-        console.log(el)
 
         let div = document.querySelector('div.' + el.title.split(' ')[0] + 'ClubInfo')
 
@@ -272,11 +277,11 @@ html
         p.classList.add('info')
         div.append(p);
 
-        let inp = function( root, value, ulClass, ind ) {
+        let inp = function( root, value,  arrClass, Attribute = [] ) {
           let input = document.createElement('input');
           input.type = 'text';
-          input.classList.add('form-control', 'hid');
-          if( ind || ind === 0) input.setAttribute( ulClass, ind );
+          input.classList.add(...arrClass);// добавлять несколько атрибутов пока не необходимо
+          if( Attribute.length ) input.setAttribute( Attribute[0], Attribute[1] );
           input.value = value;
           root.append(input);
         };
@@ -286,28 +291,37 @@ html
           el.forEach( function( a, ind ){
             let li = document.createElement("li");
             li.innerText = a;
-            inp( li, a, ulClass, ind );
+            inp( li, a, ['form-control', 'hid'], [ulClass, ind] );
             ul.append(li);
           });
           if(ulClass) ul.classList.add(ulClass);
           root.append(ul);
         };
+        
+        let butt = function( root, text, arrClass, onclick ){
+          let button = document.createElement('button');
+          button.innerText = text;
+          button.classList.add( ...arrClass);
+          button.onclick = onclick;
+          root.append(button);
+        }
 
         let h3 = document.createElement('h3');
         h3.innerText = 'Судейский состав:';
         div.append(h3);
         list( el.experts, div, 'experts');
 
+        let div2 = document.createElement('div');
+        inp( div2, '', ['form-control', 'hid'], ['experts', 'new']);//////////////////
+        butt( div2, 'Добавить судью', [ 'hid', 'btn', 'btn-sm', 'experts-form', 'btn-primary'], SaveClub);
+        div.append(div2);
+
         h3 = document.createElement('h3');
         h3.innerText = 'Медали клуба:';
         div.append(h3);
         list( el.medals, div, 'medals');
 
-        let button = document.createElement('button');
-        button.innerText = 'Сохранить';
-        button.classList.add('hid', 'btn', 'btn-sm', 'btn-primary', el.title.split(' ')[0] );
-        button.onclick = SaveClub;
-        div.append(button)
+        butt( div, 'Сохранить', [ 'hid', 'btn', 'btn-sm', el.title.split(' ')[0], 'btn-primary'], SaveClub);
 
         document.querySelector('div.' + el.title.split(' ')[0] + 'ClubInfo').id = el._id;
       };
