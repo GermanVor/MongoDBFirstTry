@@ -205,18 +205,30 @@ html
         req.setRequestHeader('Content-type', 'application/json');
         
         let obj = {
-          experts: inpArr.filter( (a) => a.hasAttribute('experts') ).map( a => a.value.replace(/ +/g, ' ').trim() ),
-          medals: inpArr.filter( (a) => a.hasAttribute('medals') ).map( a => a.value)
+          experts: inpArr.filter( (a) => a.classList.contains('experts') ).map( a => a.value.replace(/ +/g, ' ').trim() ),
+          medals: inpArr.filter( (a) => a.classList.contains('medals') ).map( a => a.value.replace(/ +/g, ' ').trim() )
         };
         
         req.send(JSON.stringify( obj ));
         
-        inpArr.forEach(function(a){
-          if( a.parentElement.localName === 'li' )
-            a.parentElement.firstChild.textContent = a.value;
+        inpArr.forEach(function(a) {
+          let value = a.value.replace(/ +/g, ' ').trim();
 
-          if( a.getAttribute('experts') === 'new' )
-            console.log(a)
+          if( a.parentElement.localName === 'li' ) {
+            if( value === '' ) {
+              a.parentElement.remove();
+            } else a.parentElement.firstChild.textContent = a.value;
+          };
+          
+          if( a.classList.contains('new') && value !== '' ) {
+            let clss = a.classList.contains('experts') ? 'experts' : 'medals';
+            let li = document.createElement("li");
+            li.innerText = value;
+            inp( li, value, ['form-control', clss]);
+            document.querySelector('div.Club:not(.hid) div.ClubInfo ul.' + clss).append(li);
+            a.value = '';
+          };
+            
         });
       };
       // сброс формы
@@ -268,7 +280,26 @@ html
 
         document.querySelector('.' + position).append(div);
       };
-
+      // побочные функции в основном для информации клуба 
+      function inp( root, value,  arrClass ) {
+        let input = document.createElement('input');
+        input.type = 'text';
+        input.classList.add(...arrClass);// добавлять несколько атрибутов пока не необходимо
+        //if( Attribute.length ) input.setAttribute( Attribute[0], Attribute[1] );
+        input.value = value;
+        input.maxlength = 20;
+        root.append(input);
+      };
+        
+      function butt( root, text, arrClass, onclick ) {
+        let button = document.createElement('button');
+        button.innerText = text;
+        button.classList.add( ...arrClass);
+        button.onclick = onclick;
+        root.append(button);
+      };
+      //закончились функции 
+      /////////////////////
       function ClubInf( el ){
 
         let div = document.querySelector('div.' + el.title.split(' ')[0] + 'ClubInfo')
@@ -278,35 +309,17 @@ html
         p.classList.add('info')
         div.append(p);
 
-        let inp = function( root, value,  arrClass, Attribute = [] ) {
-          let input = document.createElement('input');
-          input.type = 'text';
-          input.classList.add(...arrClass);// добавлять несколько атрибутов пока не необходимо
-          if( Attribute.length ) input.setAttribute( Attribute[0], Attribute[1] );
-          input.value = value;
-          input.maxlength = 20;
-          root.append(input);
-        };
-
-        let list = function( el, root, ulClass) {
+        function list( el, root, ulClass) {
           let ul = document.createElement('ul');
           el.forEach( function( a, ind ){
             let li = document.createElement("li");
             li.innerText = a;
-            inp( li, a, ['form-control', 'hid'], [ulClass, ind] );
+            inp( li, a, ['form-control', 'hid', ulClass] );//, [ulClass, ind]
             ul.append(li);
           });
           if(ulClass) ul.classList.add(ulClass);
           root.append(ul);
         };
-        
-        let butt = function( root, text, arrClass, onclick ){
-          let button = document.createElement('button');
-          button.innerText = text;
-          button.classList.add( ...arrClass);
-          button.onclick = onclick;
-          root.append(button);
-        }
 
         let h3 = document.createElement('h3');
         h3.innerText = 'Судейский состав:';
@@ -314,7 +327,7 @@ html
         list( el.experts, div, 'experts');
 
         let div2 = document.createElement('div');
-        inp( div2, '', ['form-control', 'hid'], ['experts', 'new']);//////////////////
+        inp( div2, '', ['form-control', 'hid', 'experts', 'new'] );
         butt( div2, 'Добавить судью', [ 'hid', 'btn', 'btn-sm', 'experts-form', 'btn-primary'], SaveClub);
         div.append(div2);
 
@@ -322,6 +335,11 @@ html
         h3.innerText = 'Медали клуба:';
         div.append(h3);
         list( el.medals, div, 'medals');
+
+        div2 = document.createElement('div');
+        inp( div2, '', ['form-control', 'hid', 'medals', 'new'] );
+        butt( div2, 'Добавить регалии', [ 'hid', 'btn', 'btn-sm', 'medals-form', 'btn-primary'], SaveClub);
+        div.append(div2);
 
         butt( div, 'Сохранить', [ 'hid', 'btn', 'btn-sm', el.title.split(' ')[0], 'btn-primary'], SaveClub);
 
