@@ -137,6 +137,7 @@ html
             age: age,
             club : club
           }));
+          
           xhr.onreadystatechange = function () {
             if(xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200){
               let el = JSON.parse(xhr.responseText);
@@ -204,7 +205,7 @@ html
         req.setRequestHeader('Content-type', 'application/json');
         
         let obj = {
-          experts: inpArr.filter( (a) => a.hasAttribute('experts') ).map( a => a.value),
+          experts: inpArr.filter( (a) => a.hasAttribute('experts') ).map( a => a.value.replace(/ +/g, ' ').trim() ),
           medals: inpArr.filter( (a) => a.hasAttribute('medals') ).map( a => a.value)
         };
         
@@ -283,6 +284,7 @@ html
           input.classList.add(...arrClass);// добавлять несколько атрибутов пока не необходимо
           if( Attribute.length ) input.setAttribute( Attribute[0], Attribute[1] );
           input.value = value;
+          input.maxlength = 20;
           root.append(input);
         };
 

@@ -66,16 +66,19 @@ module.exports = function(passport){
 	});
 	//добавить пользователя
 	router.post('/api/users', isAuthenticated, jsonParser, function(req, res) {
-        if(!req.body) return res.sendStatus(400);
-        const user = new User({
-            name: req.body.name.filter( a => a!==''),
-            age: req.body.age.filter( a => a!==''),
-            titleClub: req.body.club.filter( a => a!=='') 
+		console.log(1111111111111)
+		if(!req.body) return res.sendStatus(400);
+		console.log(req.body);
+		const user = new User({
+				name: req.body.name,
+				age: req.body.age,
+				titleClub: req.body.club 
 		});
+		
 		user.save(function(err){
 			if(err) return console.log(err);
 			AddUserToClub( req.body.club, user);
-			user.save();
+			console.log(user)
 			res.send(user);
 		});
 	})
@@ -84,8 +87,8 @@ module.exports = function(passport){
 	router.put( '/api/users', isAuthenticated, jsonParser, function(req, res){
 		if(!req.body) return res.sendStatus(400);
 		const newUser = {
-			age: req.body.age.filter( a => a!==''),
-			name: req.body.name.filter( a => a!==''),
+			age: req.body.age,
+			name: req.body.name,
 		};
 		User.findOneAndUpdate({_id: req.body.id}, newUser, {new: true}, function(err, user){
 			if(err) return console.log(err); 
