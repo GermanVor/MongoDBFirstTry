@@ -52,10 +52,10 @@ module.exports = function(passport){
 	});
 	//получить весь список пользователей 
   router.get( '/api/users', function(req, res){
-        User.find({}, function(err, users){
-            if(err) return console.log(err);
-            res.send(users)//посылаю весь объект 
-        });
+		User.find({}, function(err, users){
+				if(err) return console.log(err);
+				res.send(users)//посылаю весь объект 
+		});
 	});
 	// получить все клубы 
 	router.get( '/api/clubs', function(req, res){
@@ -104,7 +104,7 @@ module.exports = function(passport){
 	// удалить пользователя
 	router.delete('/api/users/:id', isAuthenticated, function(req, res){ 
         User.findByIdAndDelete(req.params.id, function(err, user){
-			if(err) return console.log(err);
+						if(err) return console.log(err);
             DellUserFromClub( user.titleClub, user );
             res.send(user);
         });
@@ -127,6 +127,17 @@ module.exports = function(passport){
 			Club.findOneAndUpdate({_id: req.params.id}, Info, {new: true}, function(err, user) {
 				if(err) return console.log(err);
 			});
+	});
+	//добавить информацию клуба 
+	router.put( '/api/clubs/info/:id', isAuthenticated, jsonParser, function(req, res){
+		if(!req.body) return res.sendStatus(400);
+		Club.findById(req.params.id, function(err, club){
+			if(err) return console.log(err);
+			if(req.body.data && req.body.key in club) {
+				club[req.body.key] = [ ...club[req.body.key], req.body.data];
+				club.save();
+			}
+		})
 	});
 	//разлогиниться 
 	router.get('/signout', function(req, res) {

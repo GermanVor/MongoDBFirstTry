@@ -25,3 +25,6 @@ div.panel-body button{
 .Club input.hid {
   display: none;
 }
+.ClubInfo button {
+  margin: 5px 10px;
+}

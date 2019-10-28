@@ -197,7 +197,7 @@ html
       };
       //сохранить изменения клуба 
       function SaveClub() {
-        let inpArr = [ ...document.querySelectorAll('div.Club:not(.hid) div.ClubInfo input')];
+        let inpArr = [ ...document.querySelectorAll('div.Club:not(.hid) div.ClubInfo input:not(.new)')];
         
         let req = new XMLHttpRequest();
         let id = document.querySelector('div.Club:not(.hid) div.ClubInfo').id;
@@ -230,6 +230,38 @@ html
           };
             
         });
+      };
+      //добавить информацию 
+      function AddInfo() {
+        console.dir(this.parentElement.querySelector('input'));
+        
+        let input = this.parentElement.querySelector('input');
+        let value = input.value.replace(/ +/g, ' ').trim();
+        
+        if( value === '') {
+          console.log('запполните поля');
+          return;
+        }
+        //может поменять при добавлении нового типа информации
+        //по хорошему написать общуую функцию с вичем для обработки основных классов подобных
+        let clss = input.classList.contains('experts') ? 'experts' : 'medals';
+        let obj = {
+          data : value,
+          key: clss
+        };
+
+        let req = new XMLHttpRequest();
+        let id = document.querySelector('div.Club:not(.hid) div.ClubInfo').id;
+        req.open('PUT', '/api/clubs/info/' + id, true);
+        req.setRequestHeader('Content-type', 'application/json');
+        req.send(JSON.stringify( obj ));
+        
+        let li = document.createElement("li");
+        li.innerText = value;
+        inp( li, value, ['form-control', clss]);
+        document.querySelector('div.Club:not(.hid) div.ClubInfo ul.' + clss).append(li);
+        input.value = '';
+         
       };
       // сброс формы
       function reset() {
@@ -328,7 +360,7 @@ html
 
         let div2 = document.createElement('div');
         inp( div2, '', ['form-control', 'hid', 'experts', 'new'] );
-        butt( div2, 'Добавить судью', [ 'hid', 'btn', 'btn-sm', 'experts-form', 'btn-primary'], SaveClub);
+        butt( div2, 'Добавить судью', [ 'hid', 'btn', 'btn-sm', 'experts-form', 'btn-primary'], AddInfo);
         div.append(div2);
 
         h3 = document.createElement('h3');
@@ -338,7 +370,7 @@ html
 
         div2 = document.createElement('div');
         inp( div2, '', ['form-control', 'hid', 'medals', 'new'] );
-        butt( div2, 'Добавить регалии', [ 'hid', 'btn', 'btn-sm', 'medals-form', 'btn-primary'], SaveClub);
+        butt( div2, 'Добавить регалии', [ 'hid', 'btn', 'btn-sm', 'medals-form', 'btn-primary'], AddInfo);
         div.append(div2);
 
         butt( div, 'Сохранить', [ 'hid', 'btn', 'btn-sm', el.title.split(' ')[0], 'btn-primary'], SaveClub);
