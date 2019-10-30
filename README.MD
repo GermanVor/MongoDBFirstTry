@@ -5,7 +5,7 @@ npm install  =>
 cd MongoDBFirstTry =>
 node app
 
-для более удобной работы с Mongodb , рекомендуется установить MongoDB Compass [https://www.mongodb.com/products/compass]
+для более удобной работы с Mongodb , рекомендуется установить [MongoDB Compass](https://www.mongodb.com/products/compass)
 
 при первом запуске приложения , в файле app.js будет создана база данных dogExhibitiondb с тремя коллекциями :
 users , clubs , admins .
