@@ -22,7 +22,7 @@ mongoose.connect("mongodb://localhost:27017/dogExhibitiondb", { useNewUrlParser:
         if(! club) {
             let PugAbbey = new Club({
                 title: 'Pug Abbey',
-                info: 'Информация клуба Мопсов',
+                info: 'Информация клуба Мопсов: Основан в 1985 году знаменитым кинологом - Воротнкиовым Г.С',
                 numbers: [],
                 medals: ['За первое место где то там'],
                 experts: ['БАУЖЕС Б.В', 'БЕЛКИН К.Ц', 'БОТНИНА Л.А']
