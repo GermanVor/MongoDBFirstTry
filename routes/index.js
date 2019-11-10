@@ -111,10 +111,17 @@ module.exports = function(passport){
 	});
 	//получить пользователя по id 
 	router.get( '/api/users/:id', function(req, res){
-        User.findOne({_id: req.params.id}, function(err, user){
-            if(err) return console.log(err);
-            res.send(user);
-        });
+		User.findOne({_id: req.params.id}, function(err, user){
+				if(err) return console.log(err);
+				res.send(user);
+		});
+	});
+	//получить пользователя по имени
+	router.get( '/api/users/name/:name', function(req, res){
+		User.findOne({ name: req.params.name}, function(err, user){
+				if(err) return console.log(err);
+				res.send(user);
+		});
 	});
 	//изменить клуб
 	router.put( '/api/clubs/:id', isAuthenticated, jsonParser, function(req, res) {

@@ -106,6 +106,7 @@ html
               let data = JSON.parse(req.responseText);
               form.elements["name"].value = data.name;
               form.elements["age"].value = data.age;
+              
               document.getElementById(data.titleClub.split(' ').join('')).checked = true;
               let arr = document.querySelectorAll('#DATA-'+data._id);
               let flag;
@@ -125,7 +126,7 @@ html
       // Добавление пользователя
       function CreateUser() {
         let form = document.forms["userForm"] ;
-        let name = form.elements["name"].value || 'ЗабылУказатьИмя' ;
+        let name = form.elements["name"].value.replace(/^\s+/g, '') || 'ЗабылУказатьИмя' ;
         let age = form.elements["age"].value || '000';
         let club = document.querySelector('input[name="clubs"]:checked').value;
         if(name !== '' && age !== '') {
@@ -150,7 +151,7 @@ html
       // Изменение пользователя
       function EditUser() {
         let form = document.forms["userForm"];
-        let name = form.elements["name"].value;
+        let name = form.elements["name"].value.replace(/^\s+/g, '');
         let age = form.elements["age"].value;
         let club = document.querySelector('input[name="clubs"]:checked').value;
         let id = document.querySelector('div.act').id.split('-')[1];

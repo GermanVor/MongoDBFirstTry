@@ -1,5 +1,5 @@
 body{
-  margin: 0 10px;
+  margin-left: 10px;
 }
 label {
   margin: 0 5px;
@@ -29,14 +29,17 @@ div.info:nth-of-type(odd) {
 .mainBloc{
   width: 60%;
   border-right: 1px solid rgb(25, 140, 223);
-  height: 100vh;
+  min-height: 100vh;
+  height: 100%;
 }
 .ClubInfo {
   width: 100%;
   border-bottom: 1px solid rgb(25, 140, 223);
 }
+
 .sideBloc{
   width: 40%;
+
   text-align: center;
 }
 .hid{
@@ -45,4 +48,7 @@ div.info:nth-of-type(odd) {
 ul {
   list-style: none;
   padding: 0;
+}
+.form-group{
+  width: 95%;
 }

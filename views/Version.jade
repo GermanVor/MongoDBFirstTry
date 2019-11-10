@@ -8,10 +8,14 @@ html
     link(rel='stylesheet', href='/stylesheets/Version.css')
     script(src='https://code.jquery.com/jquery-2.2.4.min.js')
   body
-    
     .left.mainBloc
       a(href='/signout', class='text-center new-account') Sign Out
       h2 Список пользователей
+      form#Form(name='userForm')
+        .form-group
+          label(for='name') Имя:
+          input.form-control(type='text', autocomplete='off', name='name')
+          button#SaveButton.btn.btn-sm.btn-primary(onclick='GetInfo()', type='button') Получить информацию
       .list
     .left.sideBloc
       form(name='clubs', onchange='ClubsOnChange()')
@@ -28,6 +32,30 @@ html
           .CorgiClubInfo
           .CorgiList
     script.
+      // Получить информацию пользователя
+      function GetInfo() {
+        let form = document.forms["userForm"] ;
+        let name = form.elements["name"].value.replace(/^\s+/g, '');
+        if( name ){
+          let req = new XMLHttpRequest();
+          req.open('GET', '/api/users/name/'+ name, true);
+          req.onreadystatechange = function (aEvt) {
+            if (req.readyState == 4) {
+              if(req.status == 200) {
+                let data = JSON.parse(req.responseText);
+                console.dir(data);
+                var newWin = window.open("about:blank", "hello", "width=700,height=500");
+                let p = '';
+                for( i in data){
+                  if( i!== '_id' ) p+= i + ' - ' + data[i] + '<br/>';
+                }
+                newWin.document.write(p);
+              } else console.log("Error loading page\\n");
+            }
+          };
+          req.send(null);
+        }
+      };
       // Получение всех пользователей
       function ClubsOnChange(){
         let club = document.querySelector('input[name="ShowClubs"]:checked');
@@ -116,4 +144,5 @@ html
       
         document.querySelector('div.' + el.title.split(' ')[0] + 'ClubInfo').append(div);
       };
+
       
