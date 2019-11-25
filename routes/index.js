@@ -66,7 +66,7 @@ module.exports = function(passport){
 	});
 	//добавить пользователя
 	router.post('/api/users', isAuthenticated, jsonParser, function(req, res) {
-		console.log(1111111111111)
+		
 		if(!req.body) return res.sendStatus(400);
 		console.log(req.body);
 		const user = new User({
@@ -78,7 +78,7 @@ module.exports = function(passport){
 		user.save(function(err){
 			if(err) return console.log(err);
 			AddUserToClub( req.body.club, user);
-			console.log(user)
+			
 			res.send(user);
 		});
 	})

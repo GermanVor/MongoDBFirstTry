@@ -24,7 +24,7 @@ module.exports = function(passport){
                     return done(null, user);
                 }
             );
-
+            //добавить проверку для аутентификации пользователя, если потребуется 
         })
     );
 }
