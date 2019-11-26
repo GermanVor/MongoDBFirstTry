@@ -68,13 +68,9 @@ module.exports = function(passport){
 	router.post('/api/users', isAuthenticated, jsonParser, function(req, res) {
 		
 		if(!req.body) return res.sendStatus(400);
-		console.log(req.body);
-		const user = new User({
-				name: req.body.name,
-				age: req.body.age,
-				titleClub: req.body.club 
-		});
 		
+		const user = new User({ ...req.body, ...{ parents: { ...req.body }} });
+
 		user.save(function(err){
 			if(err) return console.log(err);
 			AddUserToClub( req.body.club, user);
@@ -86,18 +82,16 @@ module.exports = function(passport){
 	//изменить пользователя 
 	router.put( '/api/users', isAuthenticated, jsonParser, function(req, res){
 		if(!req.body) return res.sendStatus(400);
-		const newUser = {
-			age: req.body.age,
-			name: req.body.name,
-		};
-		User.findOneAndUpdate({_id: req.body.id}, newUser, {new: true}, function(err, user){
-			if(err) return console.log(err); 
-			if( user.titleClub !== req.body.club ){
-				DellUserFromClub( user.titleClub, user );
+
+		User.findOne({_id: req.body.id}, function(err, user){
+			if(err) return console.log(err);
+			if( user.club !== req.body.club ){
+				DellUserFromClub( user.club, user );
 				AddUserToClub( req.body.club, user);
-				user.titleClub = req.body.club;
-				user.save();
 			}
+		})
+		User.findOneAndUpdate({_id: req.body.id}, { ...req.body, ...{ parents: { ...req.body }} }, {new: true}, function(err, user){
+			if(err) return console.log(err); 
 			res.send(user);
 		});
 	});
@@ -105,7 +99,7 @@ module.exports = function(passport){
 	router.delete('/api/users/:id', isAuthenticated, function(req, res){ 
         User.findByIdAndDelete(req.params.id, function(err, user){
 						if(err) return console.log(err);
-            DellUserFromClub( user.titleClub, user );
+            DellUserFromClub( user.club, user );
             res.send(user);
         });
 	});
