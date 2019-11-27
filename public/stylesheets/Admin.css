@@ -28,3 +28,7 @@ div.panel-body button{
 .ClubInfo button {
   margin: 5px 10px;
 }
+button {
+  outline: none;
+  border: none;
+}

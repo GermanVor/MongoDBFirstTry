@@ -93,9 +93,11 @@ html
         req.onreadystatechange = function (aEvt) {
           if (req.readyState == 4) {
             if(req.status == 200){
-              JSON.parse(req.responseText).forEach(el => {
-                AddText(el.name + '  ' + el.age + ' ' + el.club, el._id, 'list');
-                AddText(el.name + '  ' + el.age + ' ' + el.club, el._id, el.club.split(' ')[0] +'List');
+              JSON.parse(req.responseText).forEach( function(el){
+                let text = 'Имя - ' + el.name + ':  Возраст - ' + el.age + ':  Клуб - ' + el.club;
+                let about = '  Мама - '+ el.parents.mom + '@  Отец - ' + el.parents.dad + '@  Информация - ' + el.info ;
+                AddText(text, about, el._id, 'list');
+                AddText(text, about, el._id, el.club.split(' ')[0] +'List');
               });
             } else console.log("Error loading page\\n");
           };
@@ -169,9 +171,11 @@ html
         xhr.onreadystatechange = function () {
           if(xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200){
             let el = JSON.parse(xhr.responseText);
-            console.log(el)
-            AddText(el.name + '  ' + el.age + ' ' + el.club, el._id, 'list');
-            AddText(el.name + '  ' + el.age + ' ' + el.club, el._id, el.club.split(' ')[0] +'List');
+            let text = 'Имя - ' + el.name + ':  Возраст - ' + el.age + ':  Клуб - ' + el.club;
+            let about = '  Мама - '+ el.parents.mom + '@  Отец - ' + el.parents.dad + '@  Информация - ' + el.info ;
+            
+            AddText(text, about, el._id, 'list');
+            AddText(text, about, el._id, el.club.split(' ')[0] +'List');
           };
         };
       };
@@ -179,24 +183,34 @@ html
       function EditUser() {
         let id = document.querySelector('div.act').id.split('-')[1];
 
-        if(name!=='' && age!=='' || 1){
-          let xhr = new XMLHttpRequest();
-          xhr.open("PUT", 'api/users', true);
-          xhr.setRequestHeader('Content-type', 'application/json');
-          xhr.send(JSON.stringify({
-            id: id,
-            ...GetFormInfo()
-          }));
-          xhr.onreadystatechange = function() {
-            if(xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
-              let el = JSON.parse(xhr.responseText);
-              document.querySelector("div#DATA-" + el._id + ' p').innerHTML = el.name + " " + el.age + " " + el.club;
-              document.querySelector( "div.Club div#DATA-" + el._id ).remove();
-              AddText(el.name + " " + el.age + " " + el.club, el._id, el.club.split(' ')[0] +'List');
-              document.querySelector( "div.Club div#DATA-" + el._id ).classList.add('act');
-            };
+        let xhr = new XMLHttpRequest();
+        xhr.open("PUT", 'api/users', true);
+        xhr.setRequestHeader('Content-type', 'application/json');
+        xhr.send(JSON.stringify({
+          id: id,
+          ...GetFormInfo()
+        }));
+        xhr.onreadystatechange = function() {
+          if(xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
+            let el = JSON.parse(xhr.responseText);
+            
+            let text = 'Имя - ' + el.name + ':  Возраст - ' + el.age + ':  Клуб - ' + el.club;
+            let about = '  Мама - '+ el.parents.mom + '@  Отец - ' + el.parents.dad + '@  Информация - ' + el.info ;
+
+            document.querySelector("div#DATA-" + el._id + ' p').innerHTML = text;
+            let p = document.querySelector("div#DATA-" + el._id + ' p:last-child ');
+            p.innerHTML = '';
+            about.split('@').forEach( function(el){
+              p.innerHTML += el;
+              p.appendChild(document.createElement('br'));
+            });
+
+            document.querySelector( "div.Club div#DATA-" + el._id ).remove();
+            AddText(text, about, el._id, el.club.split(' ')[0] +'List');
+            document.querySelector( "div.Club div#DATA-" + el._id ).classList.add('act');
           };
-        } else console.log("Необходимо заполнить поля !");
+        };
+        
       };
       // открыть меню клуба
       function ChangeClub() {
@@ -257,13 +271,12 @@ html
       };
       //добавить информацию 
       function AddInfo() {
-        console.dir(this.parentElement.querySelector('input'));
-        
+       
         let input = this.parentElement.querySelector('input');
         let value = input.value.replace(/ +/g, ' ').trim();
         
         if( value === '') {
-          console.log('запполните поля');
+          console.log('заполните поля');
           return;
         }
         //может поменять при добавлении нового типа информации
@@ -313,7 +326,7 @@ html
         req.send(null);
       };
       //добавить компонент пользователя
-      function AddText(text, id, position) {
+      function AddText(text, about, id, position) {
         let div = document.createElement('div');
         div.id = "DATA-" + id;
         div.classList.add('info');
@@ -321,7 +334,7 @@ html
         let p = document.createElement('p');
         p.innerText = text;
         div.append(p);
-
+        
         let AddButton = document.createElement('button');
         AddButton.onclick = GetUser;
         AddButton.classList.add('btn','btn-sm', 'btn-primary');
@@ -333,7 +346,45 @@ html
         DellButton.classList.add('btn','btn-sm', 'btn-primary');
         DellButton.innerHTML = 'Удалить';
         div.append(DellButton);
-
+        ///////////////
+        let a = document.createElement('button');
+        a.onclick = function(){
+          this.parentElement.querySelector('.invizInf').classList.toggle('inviz');
+        };
+        a.classList.add('btn','btn-sm', 'btn-primary');
+        a.innerHTML = 'показать';
+        div.append(a);
+    
+        p = document.createElement('p');
+        about.split('@').forEach( function(el){
+          p.appendChild(document.createTextNode( el ));
+          p.appendChild(document.createElement('br'));
+        });
+        p.classList.add('inviz', 'invizInf')
+        div.append( document.createElement('div'), p );
+        /////////
+        a =  document.createElement('button');
+        a.onclick = function(){
+          console.dir(this.parentElement)
+          let type = 'data:application/octet-stream;base64, ';
+          let text = '';
+          this.parentElement.querySelectorAll('p').forEach( function(el){
+            text += el.textContent.split('  ').join('\n');
+          });
+          console.log(text);
+          let base = btoa(unescape(encodeURIComponent(text) ) );
+          let res = type + base;
+          this.parentElement.querySelector('a').href = res;
+          this.parentElement.querySelector('a').click();
+        };
+        a.classList.add('btn','btn-sm', 'btn-primary');
+        a.innerHTML = 'справка';
+        let b = document.createElement('a');
+        b.setAttribute('download', 'certificate.txt');
+        b.href = '#';
+        a.append(b);
+        div.append(a);
+        ////////////
         document.querySelector('.' + position).append(div);
       };
       // побочные функции в основном для информации клуба 

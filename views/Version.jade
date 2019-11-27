@@ -11,11 +11,6 @@ html
     .left.mainBloc
       a(href='/signout', class='text-center new-account') Sign Out
       h2 Список пользователей
-      form#Form(name='userForm')
-        .form-group
-          label(for='name') Имя:
-          input.form-control(type='text', autocomplete='off', name='name')
-          button#SaveButton.btn.btn-sm.btn-primary(onclick='GetInfo()', type='button') Получить информацию
       .list
     .left.sideBloc
       form(name='clubs', onchange='ClubsOnChange()')
@@ -56,7 +51,6 @@ html
           req.send(null);
         }
       };
-      // Получение всех пользователей
       function ClubsOnChange(){
         let club = document.querySelector('input[name="ShowClubs"]:checked');
         let trash = document.querySelectorAll('div.Club:not(.hid)');
@@ -70,9 +64,11 @@ html
         req.onreadystatechange = function (aEvt) {
           if (req.readyState == 4) {
             if(req.status == 200){
-              JSON.parse(req.responseText).forEach(el => {
-                AddText(el.name + '  ' + el.age + ' ' + el.titleClub, el._id, 'list');
-                AddText(el.name + '  ' + el.age + ' ' + el.titleClub, el._id, el.titleClub.split(' ')[0] +'List');
+              JSON.parse(req.responseText).forEach( function(el){
+                let text = 'Имя - ' + el.name + ':  Возраст - ' + el.age + ':  Клуб - ' + el.club;
+                let about = '  Мама - '+ el.parents.mom + '@  Отец - ' + el.parents.dad + '@  Информация - ' + el.info ;
+                AddText(text, about, el._id, 'list');
+                AddText(text, about, el._id, el.club.split(' ')[0] +'List');
               });
               ClubsOnChange();
             } else console.log("Error loading page\\n");
@@ -88,7 +84,6 @@ html
           if (req.readyState == 4) {
             if(req.status == 200){
               JSON.parse(req.responseText).forEach(el => {
-                console.log(el);
                 ClubInf(el)
               });
               ClubsOnChange();
@@ -97,7 +92,7 @@ html
         };
         req.send(null);
       })();
-      function AddText(text, id, position){
+      function AddText(text, about, id, position){
         let div = document.createElement('div');
         div.id = "DATA-" + id;
         div.classList.add('info');
@@ -105,7 +100,44 @@ html
         let p = document.createElement('p');
         p.innerText = text;
         div.append(p);
+        let a = document.createElement('button');
+        a.onclick = function(){
+          this.parentElement.querySelector('.invizInf').classList.toggle('inviz');
+        };
+        a.classList.add('btn','btn-sm', 'btn-primary');
+        a.innerHTML = 'показать';
+        div.append(a);
+    
+        p = document.createElement('p');
+        about.split('@').forEach( function(el){
+          p.appendChild(document.createTextNode( el ));
+          p.appendChild(document.createElement('br'));
+        });
+        p.classList.add('inviz', 'invizInf')
+        div.append( document.createElement('div'), p );
         
+        a =  document.createElement('button');
+        a.onclick = function(){
+          console.dir(this.parentElement)
+          let type = 'data:application/octet-stream;base64, ';
+          let text = '';
+          this.parentElement.querySelectorAll('p').forEach( function(el){
+            text += el.textContent.split('  ').join('\n');
+          });
+          console.log(text);
+          let base = btoa(unescape(encodeURIComponent(text) ) );
+          let res = type + base;
+          this.parentElement.querySelector('a').href = res;
+          this.parentElement.querySelector('a').click();
+        };
+        a.classList.add('btn','btn-sm', 'btn-primary');
+        a.innerHTML = 'справка';
+        let b = document.createElement('a');
+        b.setAttribute('download', 'certificate.txt');
+        b.href = '#';
+        a.append(b);
+        div.append(a);
+
         document.querySelector('.' + position).append(div);
       };
       function ClubInf(el){

@@ -4,11 +4,12 @@ body{
 label {
   margin: 0 5px;
 }
-div.info p{
+div.info p:first-child{
   float: left;
+  margin-right: 7px;
 }
 div.info {
-  height: 35px;
+  min-height: 35px;
   margin: 10px 5px;
   padding: 5px 3px;
 }
@@ -51,4 +52,14 @@ ul {
 }
 .form-group{
   width: 95%;
+}
+.inviz {
+  display: none;
+}
+button {
+  outline: none;
+  border: none;
+}
+.SideList button.btn.btn-sm.btn-primary {
+  margin: 5px ;
 }
