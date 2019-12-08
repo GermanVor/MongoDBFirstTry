@@ -198,7 +198,7 @@ html
             let about = '  Мама - '+ el.parents.mom + '@  Отец - ' + el.parents.dad + '@  Информация - ' + el.info ;
 
             document.querySelector("div#DATA-" + el._id + ' p').innerHTML = text;
-            let p = document.querySelector("div#DATA-" + el._id + ' p:last-child ');
+            let p = document.querySelector("div#DATA-" + el._id + ' p.invizInf');
             p.innerHTML = '';
             about.split('@').forEach( function(el){
               p.innerHTML += el;
@@ -364,14 +364,13 @@ html
         div.append( document.createElement('div'), p );
         /////////
         a =  document.createElement('button');
-        a.onclick = function(){
-          console.dir(this.parentElement)
+        a.onclick = function() {
           let type = 'data:application/octet-stream;base64, ';
           let text = '';
           this.parentElement.querySelectorAll('p').forEach( function(el){
             text += el.textContent.split('  ').join('\n');
           });
-          console.log(text);
+        
           let base = btoa(unescape(encodeURIComponent(text) ) );
           let res = type + base;
           this.parentElement.querySelector('a').href = res;
