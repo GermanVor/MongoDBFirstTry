@@ -81,9 +81,9 @@ html
 
         b = [...document.querySelectorAll('form[name=userForm] input[type=number]')]
         b.forEach(a => (
-          sendInf[a.name] = a.value || 0
+          sendInf[a.name] = a.value || 1
         ))
-
+  
         return sendInf;
       }
       // Получение всех пользователей
@@ -93,7 +93,9 @@ html
         req.onreadystatechange = function (aEvt) {
           if (req.readyState == 4) {
             if(req.status == 200){
-              JSON.parse(req.responseText).forEach( function(el){
+              console.log(JSON.parse(req.responseText))
+              let { data }= JSON.parse(req.responseText)
+              data && data.forEach( function(el){
                 let text = 'Имя - ' + el.name + ':  Возраст - ' + el.age + ':  Клуб - ' + el.club;
                 let about = '  Мама - '+ el.parents.mom + '@  Отец - ' + el.parents.dad + '@  Информация - ' + el.info ;
                 AddText(text, about, el._id, 'list');
@@ -111,7 +113,8 @@ html
         req.onreadystatechange = function (aEvt) {
           if (req.readyState == 4) {
             if(req.status == 200){
-              JSON.parse(req.responseText).forEach(el => {
+              console.log( JSON.parse(req.responseText) )
+              JSON.parse(req.responseText).data.forEach(el => {
                 ClubInf(el)
               });
               ClubsOnChange();
@@ -134,8 +137,9 @@ html
           if (req.readyState == 4) {
             if(req.status == 200) {
               let form = document.forms["userForm"];
-              let data = JSON.parse(req.responseText);
-              //- console.log(data)
+              console.log(JSON.parse(req.responseText));
+              let {data} = JSON.parse(req.responseText);
+              if(!data) return;
               for(let key in data){
                 if( String(key) in form.elements)
                   form.elements[key].value = data[key]
@@ -161,7 +165,6 @@ html
       };
       // Добавление пользователя
       function CreateUser() {
-       
         let xhr = new XMLHttpRequest();
         xhr.open("POST", 'api/users', true);
         xhr.setRequestHeader('Content-type', 'application/json');
@@ -169,8 +172,10 @@ html
         xhr.send(JSON.stringify( GetFormInfo() ));
      
         xhr.onreadystatechange = function () {
-          if(xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200){
-            let el = JSON.parse(xhr.responseText);
+         
+          if(xhr.readyState === XMLHttpRequest.DONE && xhr.status === 201){
+           
+            let el = JSON.parse(xhr.responseText).data;
             let text = 'Имя - ' + el.name + ':  Возраст - ' + el.age + ':  Клуб - ' + el.club;
             let about = '  Мама - '+ el.parents.mom + '@  Отец - ' + el.parents.dad + '@  Информация - ' + el.info ;
             
@@ -187,12 +192,14 @@ html
         xhr.open("PUT", 'api/users', true);
         xhr.setRequestHeader('Content-type', 'application/json');
         xhr.send(JSON.stringify({
-          id: id,
+          id,
           ...GetFormInfo()
         }));
         xhr.onreadystatechange = function() {
           if(xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
-            let el = JSON.parse(xhr.responseText);
+            console.log( JSON.parse(xhr.responseText) )
+            let el = JSON.parse(xhr.responseText).data;
+            if(!el) return;
             
             let text = 'Имя - ' + el.name + ':  Возраст - ' + el.age + ':  Клуб - ' + el.club;
             let about = '  Мама - '+ el.parents.mom + '@  Отец - ' + el.parents.dad + '@  Информация - ' + el.info ;

@@ -14,8 +14,11 @@ function AddUserToClub( titleClub, user ){
         }
     });
 }
+// "mongodb://localhost:27017/dogExhibitiondb"
 
-mongoose.connect("mongodb://localhost:27017/dogExhibitiondb", { useNewUrlParser: true }, function(err){
+mongoose.connect(require('./URI').uri,
+ {useUnifiedTopology: true, useNewUrlParser: true, useFindAndModify:false},
+  function(err){
     if(err) return console.log(err);
     Club.findOne({title : 'Pug Abbey' }, function(err, club){
         if(err) return console.log(err); 
@@ -60,15 +63,16 @@ mongoose.connect("mongodb://localhost:27017/dogExhibitiondb", { useNewUrlParser:
             admin.save()
         }
     });
-    
 });
 
-const app = express();
 
 var bodyParser = require('body-parser');
 var path = require('path');
 var favicon = require('static-favicon');
 var logger = require('morgan');
+
+const app = express();
+
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 

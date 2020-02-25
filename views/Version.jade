@@ -37,8 +37,7 @@ html
           req.onreadystatechange = function (aEvt) {
             if (req.readyState == 4) {
               if(req.status == 200) {
-                let data = JSON.parse(req.responseText);
-                console.dir(data);
+                let { data } = JSON.parse(req.responseText);
                 var newWin = window.open("about:blank", "hello", "width=700,height=500");
                 let p = '';
                 for( i in data){
@@ -64,7 +63,9 @@ html
         req.onreadystatechange = function (aEvt) {
           if (req.readyState == 4) {
             if(req.status == 200){
-              JSON.parse(req.responseText).forEach( function(el){
+              console.log(JSON.parse(req.responseText))
+              let { data }= JSON.parse(req.responseText)
+              data && data.forEach( function(el){
                 let text = 'Имя - ' + el.name + ':  Возраст - ' + el.age + ':  Клуб - ' + el.club;
                 let about = '  Мама - '+ el.parents.mom + '@  Отец - ' + el.parents.dad + '@  Информация - ' + el.info ;
                 AddText(text, about, el._id, 'list');
@@ -83,7 +84,8 @@ html
         req.onreadystatechange = function (aEvt) {
           if (req.readyState == 4) {
             if(req.status == 200){
-              JSON.parse(req.responseText).forEach(el => {
+              console.log( JSON.parse(req.responseText) )
+              JSON.parse(req.responseText).data.forEach(el => {
                 ClubInf(el)
               });
               ClubsOnChange();
