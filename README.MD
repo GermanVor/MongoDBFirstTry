@@ -1,10 +1,13 @@
 ## Учебный проект по базам данных    
-cd MongoDBFirstTry  =>
-npm install  =>
-установить mongo файлы mongodb =>
-запустить mongod.exe => 
-cd MongoDBFirstTry =>
-node app
+1 - clone 
+
+2 - npm i 
+
+3 - добавить файл в главную дирректорию URI.js и экспортировать объект uri : 'URI:Mlab'   
+
+4 - в терминале проекта ввести 'npm start' 
+
+5 - открыть http://localhost:8080/
 
 для более удобной работы с Mongodb , рекомендуется установить [MongoDB Compass](https://www.mongodb.com/products/compass)
 
